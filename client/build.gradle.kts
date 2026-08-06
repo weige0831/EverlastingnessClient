@@ -39,6 +39,14 @@ project(":common") {
     apply(plugin = "java-library")
     dependencies {
         "api"("org.spongepowered:mixin:0.8.7")
+        // JUnit 5 for the framework-level unit tests (EventBus, KeybindManager,
+        // Module lifecycle). Kept on the 5.x line which supports Java 8 bytecode.
+        "testImplementation"(platform("org.junit:junit-bom:5.10.2"))
+        "testImplementation"("org.junit.jupiter:junit-jupiter")
+        "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+    }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
     }
 }
 

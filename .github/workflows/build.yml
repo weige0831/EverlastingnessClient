@@ -72,6 +72,32 @@ jobs:
           path: artifacts/Everlastingness-Launcher-${{ matrix.rid }}.zip
 
   # ---------------------------------------------------------------------------
+  # Unit tests (common framework: EventBus, KeybindManager, Module lifecycle)
+  # ---------------------------------------------------------------------------
+  tests:
+    name: Unit tests (:common)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Run :common unit tests
+        working-directory: client
+        run: ./gradlew :common:test --no-daemon
+
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: common-test-report
+          path: client/common/build/reports/tests/
+
+  # ---------------------------------------------------------------------------
   # Client — legacy (1.7.10) on Gradle 8.8 / RFG
   # ---------------------------------------------------------------------------
   client-legacy:
@@ -137,7 +163,7 @@ jobs:
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [launcher, client-legacy, client-modern]
+    needs: [launcher, tests, client-legacy, client-modern]
     runs-on: ubuntu-latest
     permissions:
       contents: write
