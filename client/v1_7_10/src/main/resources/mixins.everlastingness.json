@@ -12,7 +12,8 @@
     "cps.MixinMinecraftCps",
     "fullbright.MixinEntityRendererFullbright",
     "zoom.MixinEntityRendererZoom",
-    "crosshair.MixinGuiIngameCrosshair"
+    "crosshair.MixinGuiIngameCrosshair",
+    "perspective.MixinEntityRendererPerspective"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
@@ -22,7 +23,8 @@
     "cps.MixinMinecraftCps",
     "fullbright.MixinEntityRendererFullbright",
     "zoom.MixinEntityRendererZoom",
-    "crosshair.MixinGuiIngameCrosshair"
+    "crosshair.MixinGuiIngameCrosshair",
+    "perspective.MixinEntityRendererPerspective"
   ],
   "injectors": {
     "defaultRequire": 1
