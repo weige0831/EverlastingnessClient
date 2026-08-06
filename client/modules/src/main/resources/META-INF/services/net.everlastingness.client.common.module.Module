@@ -1,2 +1,3 @@
 net.everlastingness.client.modules.hud.HudOverlayModule
 net.everlastingness.client.modules.cape.CapeModule
+net.everlastingness.client.modules.fps.FpsOptimizationModule

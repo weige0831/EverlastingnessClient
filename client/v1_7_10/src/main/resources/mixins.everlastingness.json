@@ -7,12 +7,14 @@
   "mixins": [
     "hud.MixinEntityRendererHud",
     "keybind.MixinMinecraftRunTick",
-    "cape.MixinRenderPlayerCape"
+    "cape.MixinRenderPlayerCape",
+    "fps.MixinEntityCull"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
     "keybind.MixinMinecraftRunTick",
-    "cape.MixinRenderPlayerCape"
+    "cape.MixinRenderPlayerCape",
+    "fps.MixinEntityCull"
   ],
   "injectors": {
     "defaultRequire": 1

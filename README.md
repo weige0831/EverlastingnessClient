@@ -195,8 +195,17 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 - [x] 内置 64×32 PNG 披风纹理(`everlastingness/textures/capes/default.png`),本地玩家默认显示
 - [x] **reobf 验证**:refmap 正确映射 `doRender → func_76986_a`,mixin + 纹理 + CapeModule 均在 production jar
 
-- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键/GUI/披风 在游戏内生效
-- [ ] 更多功能模块:FPS 优化
+**FPS 优化(已完成)** — 第五个真实功能模块(实体渲染距离剔除):
+
+- [x] `EntityCullConfig`(版本无关,`:common`):可配置剔除距离(默认 48 格),平方比较(无 sqrt,廉价)
+- [x] `FpsOptimizationModule`(模块化开关,默认关闭,可在 GUI 开启)
+- [x] `MixinEntityCull`:注入 `RenderManager.renderEntitySimple`(HEAD,cancellable),对距相机超过阈值的实体取消渲染(跳过昂贵逐实体绘制)
+- [x] 安全保证:本地玩家与相机实体永不剔除;距离计算异常回退原版
+- [x] **reobf 验证**:refmap 正确映射 `renderEntitySimple → func_147937_a`,mixin 已在 production jar
+
+> 五个功能模块全部就位并通过编译 + reobf + refmap 验证。这是 Sodium/Lithium 同类的实体剔除优化。
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → 全部模块(HUD/按键/GUI/披风/FPS)在游戏内生效
 
 ### Phase 4 — 分发
 
