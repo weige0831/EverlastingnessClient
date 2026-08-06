@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.everlastingness.client.headlesstest.fixtures",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinStubTarget"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
