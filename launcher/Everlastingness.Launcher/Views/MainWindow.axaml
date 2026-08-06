@@ -1,0 +1,141 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Everlastingness.Launcher.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="680"
+        x:Class="Everlastingness.Launcher.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Everlastingness Launcher"
+        Width="1000" Height="680"
+        MinWidth="820" MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ===== Header ===== -->
+        <Border Grid.Row="0" Background="#1b1f2b" Padding="20,14">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="⬡" FontSize="28" Foreground="#6ea8fe" VerticalAlignment="Center"/>
+                    <StackPanel>
+                        <TextBlock Text="Everlastingness" FontSize="20" FontWeight="SemiBold" Foreground="White"/>
+                        <TextBlock Text="Minecraft 优化客户端 · 对标 Lunar / Badlion" FontSize="11" Foreground="#9aa3b2"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Account.Username, FallbackValue=未登录}"
+                               Foreground="#cfd6e4" VerticalAlignment="Center"/>
+                    <Button Content="微软登录" Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding !IsBusy}" Padding="14,6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== Body ===== -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <Grid ColumnDefinitions="360,*" RowDefinitions="Auto,Auto,*">
+
+                <!-- Version selection -->
+                <Border Grid.Row="0" Grid.Column="0" Margin="0,0,10,10" Padding="16"
+                        Background="#222734" CornerRadius="8">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="客户端版本" FontWeight="SemiBold" Foreground="White"/>
+                        <TextBlock Text="选择要注入的 Minecraft 版本" FontSize="11" Foreground="#9aa3b2"/>
+
+                        <ComboBox ItemsSource="{Binding ClientVersions}"
+                                  SelectedItem="{Binding SelectedClientVersion}"
+                                  HorizontalAlignment="Stretch" Margin="0,4,0,0"/>
+                        <ItemsControl ItemsSource="{Binding ClientVersions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ClientVersionViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                        <TextBlock Grid.Column="0" Text="{Binding MinecraftVersion}" Foreground="#cfd6e4"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Ready, StringFormat='已就绪:{0}'}"
+                                                   Foreground="#6ea8fe" FontSize="11"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Launch settings -->
+                <Border Grid.Row="0" Grid.Column="1" Margin="10,0,0,10" Padding="16"
+                        Background="#222734" CornerRadius="8">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="0,4,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Java 路径" Foreground="#9aa3b2" Margin="0,0,0,4"/>
+                        <TextBox  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                  Text="{Binding JavaPath}" Watermark="留空则自动检测" Margin="0,0,8,8"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="最大内存 (MB)" Foreground="#9aa3b2" Margin="0,0,0,4"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="离线用户名" Foreground="#9aa3b2" Margin="8,0,0,4"/>
+                        <NumericUpDown Grid.Row="3" Grid.Column="0"
+                                       Value="{Binding MaximumRamMb}" Minimum="512" Maximum="65536" Increment="512"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding OfflineUsername}" Margin="8,0,0,0"/>
+
+                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                  Content="启动时注入 Everlastingness 客户端"
+                                  IsChecked="{Binding InjectClient}" Margin="0,12,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Vanilla version manifest -->
+                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,10" Padding="16"
+                        Background="#222734" CornerRadius="8">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="原版版本清单(Mojang)" FontWeight="SemiBold" Foreground="White"/>
+                            <Button Grid.Column="1" Content="刷新" Command="{Binding RefreshVersionsCommand}"
+                                    IsEnabled="{Binding !IsBusy}" Padding="12,4"/>
+                        </Grid>
+                        <ComboBox ItemsSource="{Binding MinecraftVersions}"
+                                  SelectedItem="{Binding SelectedMinecraftVersion}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Game log -->
+                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="12"
+                        Background="#161a24" CornerRadius="8" BorderBrush="#2a3040" BorderThickness="1">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Grid.Row="0" Text="游戏日志" Foreground="#9aa3b2" Margin="0,0,0,6"/>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding GameLog}" Background="Transparent" BorderThickness="0"
+                                 FontFamily="Cascadia Code,Consolas,Menlo,monospace" FontSize="11">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{Binding}" Foreground="#cfd6e4" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ===== Footer: status + launch ===== -->
+        <Border Grid.Row="2" Background="#1b1f2b" Padding="20,10">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="{Binding Status}" Foreground="#cfd6e4"/>
+                    <ProgressBar IsIndeterminate="False" Maximum="1"
+                                 IsVisible="{Binding IsBusy}"
+                                 Height="3" MinWidth="200"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="启动游戏" Command="{Binding LaunchCommand}"
+                        IsEnabled="{Binding !IsBusy}"
+                        Background="#6ea8fe" Foreground="White" FontWeight="SemiBold"
+                        Padding="28,8" Margin="12,0,0,0" FontSize="14"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

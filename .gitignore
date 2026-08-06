@@ -1,0 +1,84 @@
+# ===== ZCode workspace metadata =====
+.zcode/
+
+# ===== .NET / C# =====
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+project.lock.json
+artifacts/
+## Publish
+publish/
+*.publishsettings
+PublishScripts/
+
+# ===== Java / Gradle =====
+## Gradle wrapper is KEPT (gradlew, gradlew.bat, gradle/wrapper/)
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+out/
+target/
+*.class
+## Minecraft dev artifacts
+run/
+runs/
+minecraft/
+## IDE
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== Secrets / local config =====
+*.pfx
+*.p12
+*.key
+appsettings.*.Local.json
+*.local.json
+secrets.json
+
+# ===== Launcher runtime / user data (never commit) =====
+**/.minecraft/
+.minecraft/
+accounts.json
+*.token-cache
