@@ -32,12 +32,16 @@ ls v1_7_10/build/libs/                            # 预期:v1_7_10-1.0.0-SNAPSHO
 把产物 jar 复制到客户端资源目录(启动器从这里取注入 jar):
 
 ```bash
-mkdir -p ~/.everlastingness/client
-cp v1_7_10/build/libs/v1_7_10-1.0.0-SNAPSHOT.jar \
-   ~/.everlastingness/client/everlastingness-1.7.10.jar
+# 推荐:运行本仓库提供的 staging 脚本(自动放好 client jar + 下载 mixin/launchwrapper)
+bash scripts/stage-client-1.7.10.sh
 ```
 
-> 还需放入 mixin 运行时:`launchwrapper-1.12.jar`、`mixin-0.8.7.jar`(从 [Sponge Maven](https://repo.spongepowered.org/) / Maven Central 下载)。启动器配置已声明这些文件名。
+该脚本会:
+- 把 `v1_7_10-1.0.0-SNAPSHOT.jar` 复制为 `~/.everlastingness/client/everlastingness-1.7.10.jar`(启动器配置文件预期的文件名);
+- 下载 `mixin-0.8.7.jar` 与 `launchwrapper-1.12.jar` 到同一目录(注入所需运行时,URL 已验证 200);
+- 打印各文件就位状态。
+
+> 也可手动:见脚本内容了解文件名与来源。**文件名必须与 `ClientProfiles.cs` 中 Legacy profile 的声明一致**(脚本已处理好)。
 
 ---
 
