@@ -42,7 +42,8 @@ public class ClientTweaker implements ITweaker {
 
         // Start the client core (creates the singleton + event bus) and run
         // module discovery via the ServiceLoader in :common.
-        var client = Bootstrap.start(mcVersion);
+        net.everlastingness.client.common.EverlastingnessClient client =
+                Bootstrap.start(mcVersion);
         ModuleDiscoverer.discoverAndRegister(client);
 
         // Per-version mixins (see src/main/java/.../mixin/) are picked up by

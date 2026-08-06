@@ -10,7 +10,7 @@
 
 plugins {
     id("java-library")
-    id("com.gtnewhorizons.retrofuturagradle") version "1.4.0"
+    id("com.gtnewhorizons.retrofuturagradle") version "1.4.7"
 }
 
 // RFG requires a Java 8 toolchain to compile against 1.7.10.
@@ -30,6 +30,19 @@ minecraft {
     extraTweakClasses.add("net.everlastingness.client.v1_7_10.tweaker.ClientTweaker")
 }
 
+// RFG injects its own repositories (MCP, GTNH) as project repositories, which
+// shadow the dependencyResolutionManagement block. Declare Sponge Maven here so
+// Mixin (org.spongepowered:mixin) resolves from this subproject too.
+repositories {
+    maven("https://repo.spongepowered.org/repository/maven-public/") {
+        name = "Sponge Maven"
+    }
+    maven("https://nexus.gtnewhorizons.com/repository/public/") {
+        name = "GTNH Maven"
+    }
+    mavenCentral()
+}
+
 dependencies {
     // Version-specific code depends on the shared common + modules libraries.
     implementation(project(":common"))
@@ -38,6 +51,39 @@ dependencies {
     // SpongePowered Mixin runtime (LaunchWrapper-backed service variant).
     implementation("org.spongepowered:mixin:0.8.7")
     annotationProcessor("org.spongepowered:mixin:0.8.7:processor")
+}
+
+// Configure the Mixin annotation processor: it must know the MCP→SRG mapping
+// (shipped in the Forge 1.7.10 conf cache as mcp-srg.srg) so it can generate
+// the refmap that remaps MCP-named @Inject/@Shadow targets
+// (e.g. updateCameraAndRender → func_78480_b) for the reobfuscated jar.
+//
+// RFG downloads Forge 1.7.10 to the gradle cache during setupDecompWorkspace;
+// the srgs/ subfolder holds the full mapping set. We locate the cache dir
+// dynamically so the path is not hard-coded.
+val forgeConfDir = file(System.getProperty("user.home") +
+    "/.gradle/caches/minecraft/net/minecraftforge/forge/1.7.10-10.13.4.1614-1.7.10/unpacked/srgs")
+val mcpToSrg = file("$forgeConfDir/mcp-srg.srg")
+tasks.withType<JavaCompile> {
+    if (mcpToSrg.exists()) {
+        options.compilerArgs.addAll(listOf(
+            // Note the capital R in outRefMapFile — the processor rejects the
+            // lowercase form. This emits mixins.everlastingness.refmap.json,
+            // which the reobf jar bundles so Mixin can resolve MCP-named
+            // @Inject targets against SRG names in production.
+            "-AoutRefMapFile=${layout.buildDirectory.file("mixins.everlastingness.refmap.json").get().asFile.absolutePath}",
+            "-AreobfSrgFile=${mcpToSrg.absolutePath}",
+            "-AdefaultObfuscationEnv=searge"
+        ))
+    }
+}
+
+// Bundle the generated refmap into the jar so the reobfuscated production
+// artifact carries the MCP→SRG resolution data. The refmap is written during
+// compileJava, so we wire the jar task to depend on and pull it in.
+val refmapFile = layout.buildDirectory.file("mixins.everlastingness.refmap.json")
+tasks.named<Jar>("jar") {
+    from(refmapFile)
 }
 
 // The reobf task remaps MCP names back to SRG/Notch for the production jar.

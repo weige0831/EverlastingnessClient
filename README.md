@@ -6,7 +6,7 @@
 - **客户端核心** — Java,运行时通过 SpongePowered Mixin 注入到原版 Minecraft(不依赖 Forge / Fabric)
 - **多版本矩阵** — 1.7.10、1.8.9、1.12.2(legacy · LaunchWrapper)+ 1.16.5、1.17.1、1.18.2、1.19.x、1.20.x、1.21.x(modern · ModLauncher)
 
-> 当前进度:**Phase 0 完成** —— 启动器端到端可编译运行;客户端核心框架(`:common` / `:agent` / `:modules`)与 1.7.10 注入骨架就位。详见[实施进度](#实施进度)。
+> 当前进度:**Phase 1 客户端构建链路完成** —— 启动器端到端可编译运行;客户端 `:v1_7_10` 全流程跑通(RFG setup → MCP 反编译 → Mixin 编译 → reobf → refmap 打包)。详见[实施进度](#实施进度)。
 
 ---
 
@@ -123,13 +123,21 @@ cd client
 - [x] `:modules` — `HudOverlayModule` 示例(证明模块生命周期 + 事件总线端到端可用)
 - [x] `:v1_7_10` — RFG + MCP + Mixin 骨架,`ClientTweaker`(legacy 注入入口),示例 `MixinEntityRenderer`
 
-### ⏭ Phase 1 — 端到端打通(下一步)
+### ⏭ Phase 1 — 1.7.10 客户端构建链路(已完成)
 
-- [ ] 在真实 1.7.10 dev 环境验证 `MixinEntityRenderer` 注入目标并跑通 reobf
-- [ ] 真机验证:登录 → 下载 1.7.10 → 注入启动 → HUD 在游戏内显示
-- [ ] modern 版本(1.20.x)的 ModLauncher/agent 注入链路
+- [x] RFG 插件解析(需 `pluginManagement.resolutionStrategy` 映射,因 RFG 不在 Gradle Plugin Portal)
+- [x] foojay toolchain resolver 供 RFG 的 Fernflower 反编译器(JDK 17)
+- [x] `setupDecompWorkspace` 跑通(下载 MC 1.7.10 原版 + MCP,反编译,打补丁,约 13 分钟)
+- [x] 校验 `MixinEntityRenderer` 注入目标:`updateCameraAndRender(float)` 确实存在于反编译 MC 源(行 1013),SRG 名 `func_78480_b`
+- [x] Mixin 注解处理器配置(`-AreobfSrgFile` 指向 `mcp-srg.srg`,`-AoutRefMapFile` 生成 refmap)
+- [x] **`reobfJar` 成功**:产出 `v1_7_10-1.0.0-SNAPSHOT.jar`(含 `MixinEntityRenderer`/`ClientTweaker`/`mixins.everlastingness.json`/`mixins.everlastingness.refmap.json`),refmap 正确映射 `updateCameraAndRender → func_78480_b`
 
-### Phase 2–4 — 多版本覆盖 + 功能模块 + 分发
+### ⏭ Phase 2 — 真机端到端 + 多版本(下一步)
+
+- [ ] 真机验证:启动器登录 → 下载 1.7.10 → 注入启动 → HUD 在游戏内显示
+- [ ] 1.20.x modern 版本(Fabric Loom)子项目与 agent 注入链路
+
+### Phase 3–4 — 功能模块 + 分发
 
 详见历史计划文档。
 
