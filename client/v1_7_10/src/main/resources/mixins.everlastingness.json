@@ -13,7 +13,9 @@
     "fullbright.MixinEntityRendererFullbright",
     "zoom.MixinEntityRendererZoom",
     "crosshair.MixinGuiIngameCrosshair",
-    "perspective.MixinEntityRendererPerspective"
+    "perspective.MixinEntityRendererPerspective",
+    "outline.MixinRenderGlobalOutline",
+    "scroll.MixinGuiContainerScroll"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
@@ -24,7 +26,9 @@
     "fullbright.MixinEntityRendererFullbright",
     "zoom.MixinEntityRendererZoom",
     "crosshair.MixinGuiIngameCrosshair",
-    "perspective.MixinEntityRendererPerspective"
+    "perspective.MixinEntityRendererPerspective",
+    "outline.MixinRenderGlobalOutline",
+    "scroll.MixinGuiContainerScroll"
   ],
   "injectors": {
     "defaultRequire": 1

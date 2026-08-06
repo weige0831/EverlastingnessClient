@@ -105,5 +105,15 @@ public class MixinEntityRendererHud {
             y += font.FONT_HEIGHT + 1;
             font.drawStringWithShadow(cps, x, y, color);
         }
+
+        // Clock line
+        net.everlastingness.client.common.module.Module clockMod =
+            evClient.module("clock_armor_hud");
+        if (clockMod instanceof net.everlastingness.client.modules.hud.ClockArmorHudModule
+            && clockMod.isEnabled()) {
+            String time = ((net.everlastingness.client.modules.hud.ClockArmorHudModule) clockMod).getTimeString();
+            y += font.FONT_HEIGHT + 1;
+            font.drawStringWithShadow("Time: " + time, x, y, color);
+        }
     }
 }
