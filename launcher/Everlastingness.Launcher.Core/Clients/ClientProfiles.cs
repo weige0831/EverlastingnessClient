@@ -35,6 +35,7 @@ public static class ClientProfiles
             "asm-9.6.jar",
             "asm-tree-9.6.jar",
             "asm-commons-9.6.jar",
+            "asm-util-9.6.jar",
             "guava-15.0.jar",
             "gson-2.2.4.jar",
             "jopt-simple-4.5.jar",
@@ -44,11 +45,11 @@ public static class ClientProfiles
         ],
         TweakClasses =
         [
-            // EverlastingnessPreTweaker does everything: exclusions + manual
-            // Mixin bootstrap + config registration + transformer registration.
-            // We do NOT use SpongePowered's MixinTweaker because its static
-            // initializer triggers service discovery before exclusions are set.
+            // PreTweaker adds org.spongepowered.asm. classloader exclusion,
+            // then MixinTweaker does the standard bootstrap (now ASM is on cp).
+            // MixinTweaker reads --tweakClass args to find mixin configs.
             "net.everlastingness.client.v1_7_10.tweaker.EverlastingnessPreTweaker",
+            "org.spongepowered.asm.launch.MixinTweaker",
             "net.everlastingness.client.v1_7_10.tweaker.ClientTweaker"
         ],
         SystemProperties = new Dictionary<string, string>

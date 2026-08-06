@@ -24,7 +24,24 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
+        // args contains the non-option arguments after Launch.launch() parsed
+        // --tweakClass, --version, --gameDir, --assetsDir. We need to rebuild
+        // the full argument list for Main.main() which expects ALL options.
         this.args.addAll(args);
+        // Re-add the standard options that Launch.launch() consumed.
+        if (gameDir != null) {
+            this.args.add("--gameDir");
+            this.args.add(gameDir.getAbsolutePath());
+        }
+        if (assetsDir != null) {
+            this.args.add("--assetsDir");
+            this.args.add(assetsDir.getAbsolutePath());
+        }
+        // version is passed as the profile parameter in some versions
+        if (profile != null && !profile.isEmpty()) {
+            this.args.add("--version");
+            this.args.add(profile);
+        }
     }
 
     @Override
@@ -68,11 +85,13 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
 
     @Override
     public String getLaunchTarget() {
-        return "net.minecraft.client.Minecraft";
+        return "net.minecraft.client.main.Main";
     }
 
     @Override
     public String[] getLaunchArguments() {
+        // Return the stored args (vanilla game args captured during acceptOptions).
+        // Launch.launch() merges these from all tweakers.
         return args.toArray(new String[0]);
     }
 }
