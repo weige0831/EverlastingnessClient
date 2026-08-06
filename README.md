@@ -160,10 +160,11 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 - [x] `EverlastingnessAgent.premain`:发现服务 → `MixinBootstrap.init()` → 取 `IMixinTransformerFactory` → `Mixins.addConfiguration` → 注册 transformer
 - [x] ServiceLoader 注册(`META-INF/services/...IMixinService[Bootstrap]`)
 - [x] `MergeAgentDepsTask`:把 reobf jar 与 Mixin + ASM 合并成单个 standalone agent jar
-- [x] **编译验证**:`:v1_20_x:compileJava` BUILD SUCCESSFUL;**最终 agent jar** `everlastingness-1.20.1-1.0.0-agent.jar`(2.9MB)含 host 类 + Mixin 核心 + ASM + 合并后的 service 文件 + Premain-Class manifest
-- [ ] ⚠️ **真机运行未验证**:此处实现了完整的 standalone host 并通过编译,但 Mixin 在真机 MC 上的实际应用需联网真机环境测试(本会话网络/无 MC 运行时)。这是唯一未闭环的验证点
+- [x] **编译验证**:`:v1_20_x:compileJava` BUILD SUCCESSFUL;**最终 agent jar** `everlastingness-1.20.1-1.0.0-agent.jar` 含 host 类 + Mixin 核心 + ASM + Guava + gson + 合并后的 service 文件 + Premain-Class manifest
+- [x] **Headless smoke test 通过(真实执行证据,非仅编译)**:`StandaloneHostSmokeTest` 在纯 JVM 上运行验证:① ServiceLoader 发现 `StandaloneMixinService` ② `MixinService.boot()` 选中它 ③ `MixinBootstrap.init()` 完整运行无异常。该 smoke test **发现并修复了 3 个真实打包 bug**:① 签名文件未剥离(`Invalid signature file digest`)② 缺 `IGlobalPropertyService` ③ 缺 Guava/gson。运行方式:`java -cp everlastingness-1.20.1-1.0.0-agent.jar net.everlastingness.client.headlesstest.StandaloneHostSmokeTest`
+- [ ] ⚠️ **真机完整验证未执行**:transformer 对混淆运行时类的实际应用(需真实 MC 运行时)仍待本地环境测试。smoke test 已证明 host 引导链路在纯 JVM 上工作,但 mixin 对 obfuscated MC 类的端到端生效需真机确认
 
-> **诚实说明**:Phase 3b 是整个项目不确定性最高的部分(研究标记 uncertainty: high)。代码已对照 Mixin 0.8.7 源码逐一实现接口契约并编译通过,但 standalone host 在真机的实际生效(服务被 ServiceLoader 选中、transformer 正确应用、无重入/类加载冲突)只能通过真机注入测试确认。真机测试(登录→下载 1.7.10/1.20.1→注入启动→HUD 显示)是 Phase 3c 的首要任务。
+> **验证边界说明**:smoke test 证明 standalone host 的**引导路径**正确(服务发现 + boot + init),这是 Phase 3b 核心不确定点的实质性闭环证据(原仅编译验证)。唯一仍待真机的是:transformer 对混淆 MC 类的应用 —— 这需真实 MC 运行时,本会话沙箱(无 GUI/GPU/MC/账号)物理阻塞,见 [`docs/e2e-verification-steps.md`](docs/e2e-verification-steps.md)。
 
 ### ⏭ Phase 3c — 功能模块 + 真机端到端(进行中)
 

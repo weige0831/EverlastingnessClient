@@ -145,6 +145,12 @@ jobs:
         working-directory: client-modern
         run: ./gradlew :v1_20_x:packageAgent --no-daemon --stacktrace
 
+      - name: Headless standalone-host smoke test
+        working-directory: client-modern
+        run: |
+          java -cp v1_20_x/build/libs/everlastingness-1.20.1-1.0.0-agent.jar \
+            net.everlastingness.client.headlesstest.StandaloneHostSmokeTest
+
       - name: Collect agent + reobf jars
         run: |
           mkdir -p artifacts/client-modern

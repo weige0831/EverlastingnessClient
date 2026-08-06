@@ -155,7 +155,11 @@ val runtimeDepsForAgent = configurations.detachedConfiguration(
     dependencies.create("org.ow2.asm:asm-tree:9.6"),
     dependencies.create("org.ow2.asm:asm:9.6"),
     dependencies.create("org.ow2.asm:asm-commons:9.6"),
-    dependencies.create("org.ow2.asm:asm-util:9.6")
+    dependencies.create("org.ow2.asm:asm-util:9.6"),
+    // Mixin depends on Guava (ImmutableList used in MixinEnvironment$Phase static
+    // init) and gson. Bundle both so the agent jar is self-contained.
+    dependencies.create("com.google.guava:guava:32.1.3-jre"),
+    dependencies.create("com.google.code.gson:gson:2.10.1")
 )
 
 val packageAgent by tasks.registering(net.everlastingness.build.MergeAgentDepsTask::class) {
