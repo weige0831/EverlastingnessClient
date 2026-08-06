@@ -10,7 +10,9 @@
     "cape.MixinRenderPlayerCape",
     "fps.MixinEntityCull",
     "cps.MixinMinecraftCps",
-    "fullbright.MixinEntityRendererFullbright"
+    "fullbright.MixinEntityRendererFullbright",
+    "zoom.MixinEntityRendererZoom",
+    "crosshair.MixinGuiIngameCrosshair"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
@@ -18,7 +20,9 @@
     "cape.MixinRenderPlayerCape",
     "fps.MixinEntityCull",
     "cps.MixinMinecraftCps",
-    "fullbright.MixinEntityRendererFullbright"
+    "fullbright.MixinEntityRendererFullbright",
+    "zoom.MixinEntityRendererZoom",
+    "crosshair.MixinGuiIngameCrosshair"
   ],
   "injectors": {
     "defaultRequire": 1
