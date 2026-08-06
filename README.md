@@ -188,8 +188,15 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 - [x] 绑定打开键:RIGHT_SHIFT(LWJGL KEY_RSHIFT=60)经 KeybindManager → `Minecraft.displayGuiScreen`
 - [x] **reobf 验证**:编译通过,`ModuleConfigGuiScreen` 已在 production jar,reobf 正确
 
-- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键/GUI 在游戏内生效
-- [ ] 更多功能模块:披风 / FPS 优化
+**披风系统(已完成)** — 第四个真实功能模块:
+
+- [x] `CosmeticsRegistry`(版本无关,`:common`):每玩家披风纹理注册表
+- [x] `CapeModule`(模块化开关)+ `MixinRenderPlayerCape`:注入 `RenderPlayer.doRender`(RETURN),对注册玩家用 `Tessellator` 绘制披风 GL 四边形(随身体 yaw 旋转、全亮、半透明混合)
+- [x] 内置 64×32 PNG 披风纹理(`everlastingness/textures/capes/default.png`),本地玩家默认显示
+- [x] **reobf 验证**:refmap 正确映射 `doRender → func_76986_a`,mixin + 纹理 + CapeModule 均在 production jar
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键/GUI/披风 在游戏内生效
+- [ ] 更多功能模块:FPS 优化
 
 ### Phase 4 — 分发
 

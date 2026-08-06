@@ -6,11 +6,13 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "hud.MixinEntityRendererHud",
-    "keybind.MixinMinecraftRunTick"
+    "keybind.MixinMinecraftRunTick",
+    "cape.MixinRenderPlayerCape"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
-    "keybind.MixinMinecraftRunTick"
+    "keybind.MixinMinecraftRunTick",
+    "cape.MixinRenderPlayerCape"
   ],
   "injectors": {
     "defaultRequire": 1

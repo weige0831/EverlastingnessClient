@@ -85,6 +85,17 @@ public class ClientTweaker implements ITweaker {
                 },
                 "Open config GUI");
 
+        // Register the local player for the default Everlastingness cape once a
+        // session username is available. The cape module + MixinRenderPlayerCape
+        // render the bundled texture for any registered player.
+        try {
+            String localName = net.minecraft.client.Minecraft.getMinecraft().getSession().getUsername();
+            net.everlastingness.client.common.cosmetics.CosmeticsRegistry.get().setCape(
+                    localName, net.everlastingness.client.common.cosmetics.CosmeticsRegistry.DEFAULT_CAPE);
+        } catch (Throwable ignored) {
+            // Session may not be ready at inject time; the cape simply won't show until re-register.
+        }
+
         // Per-version mixins (see src/main/java/.../mixin/) are picked up by
         // MixinTweaker via the mixins.everlastingness.json config, which the
         // launcher sets with -Dmixin.configs.
