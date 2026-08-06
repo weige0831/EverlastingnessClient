@@ -9,14 +9,16 @@
     "keybind.MixinMinecraftRunTick",
     "cape.MixinRenderPlayerCape",
     "fps.MixinEntityCull",
-    "cps.MixinMinecraftCps"
+    "cps.MixinMinecraftCps",
+    "fullbright.MixinEntityRendererFullbright"
   ],
   "client": [
     "hud.MixinEntityRendererHud",
     "keybind.MixinMinecraftRunTick",
     "cape.MixinRenderPlayerCape",
     "fps.MixinEntityCull",
-    "cps.MixinMinecraftCps"
+    "cps.MixinMinecraftCps",
+    "fullbright.MixinEntityRendererFullbright"
   ],
   "injectors": {
     "defaultRequire": 1
