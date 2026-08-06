@@ -165,10 +165,17 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 
 > **诚实说明**:Phase 3b 是整个项目不确定性最高的部分(研究标记 uncertainty: high)。代码已对照 Mixin 0.8.7 源码逐一实现接口契约并编译通过,但 standalone host 在真机的实际生效(服务被 ServiceLoader 选中、transformer 正确应用、无重入/类加载冲突)只能通过真机注入测试确认。真机测试(登录→下载 1.7.10/1.20.1→注入启动→HUD 显示)是 Phase 3c 的首要任务。
 
-### ⏭ Phase 3c — 功能模块 + 真机端到端(下一步)
+### ⏭ Phase 3c — 功能模块 + 真机端到端(进行中)
 
-- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → mixin 在游戏内生效
-- [ ] 功能模块:FPS 优化 / HUD 覆盖层 / 披风 / 按键绑定 / 配置 UI
+**HUD 覆盖层(已完成)** — 首个真实功能模块,在 1.7.10 上每帧绘制坐标 + FPS:
+
+- [x] `MixinEntityRendererHud`:注入 `updateCameraAndRender`(HEAD),经反编译 MC 源确认 API
+- [x] 读取实时游戏状态:`mc.thePlayer.posX/Y/Z`(public double)、自持 EMA 滚动平均 FPS
+- [x] 用游戏自身 `FontRenderer.drawStringWithShadow` 绘制文本(真实 MCP API)
+- [x] **`:v1_7_10:reobfJar` 验证**:编译通过 + refmap 正确映射 `updateCameraAndRender → func_78480_b`,HUD mixin 已在 production jar 中
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD 在游戏内显示
+- [ ] 更多功能模块:披风 / 按键绑定 / 配置 UI / FPS 优化
 
 ### Phase 4 — 分发
 
