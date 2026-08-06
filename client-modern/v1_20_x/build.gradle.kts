@@ -74,3 +74,57 @@ tasks.named<Jar>("jar") {
         )
     }
 }
+
+// ============================================================================
+// Build-time reobfuscation: intermediary → official (the reobf gap solution)
+// ============================================================================
+//
+// Loom's remapJar emits an intermediary-namespaced jar. Vanilla runtime classes
+// are official/obfuscated, so a standalone agent's mixins would silently fail.
+// This task reobfuscates the remapJar output to official names using Tiny
+// Remapper + MixinExtension (rewrites @Mixin/@Inject annotation strings too).
+//
+// The output (-official.jar) is what the launcher injects via -javaagent.
+val reobfMappings = layout.projectDirectory.file("mappings/intermediary-1.20.1.tiny")
+
+val reobfJar by tasks.registering(net.everlastingness.build.ReobfIntermediaryToOfficialTask::class) {
+    group = "everlastingness"
+    description = "Reobfuscate the Loom intermediary jar to official (obfuscated) names."
+
+    // Input: the intermediary jar from Loom's remapJar.
+    inputJar.set(tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar").flatMap { it.archiveFile })
+    // Output: alongside the loom output, suffixed -official.
+    outputJar.set(layout.buildDirectory.file("libs/${base.archivesName.get()}-${version}-official.jar"))
+    mappingsFile.set(reobfMappings)
+    // classpath is wired in afterEvaluate below (needs the resolved minecraft config).
+}
+
+// Tiny Remapper needs classpath roots to resolve @Inject/@Shadow targets: it
+// can only rewrite an @Inject method string if it can enumerate the target
+// class's members. The input mixin jar uses INTERMEDIARY names (class_757 /
+// method_3192), so the classpath must include the intermediary-namespaced MC
+// jar. The vanilla (official) jar is also added so Tiny Remapper can follow
+// inheritance across both namespaces.
+val loomCache = file("${System.getProperty("user.home")}/.gradle/caches/fabric-loom")
+val vanillaClientJar = loomCache.resolve("${property("minecraft_version")}/minecraft-client.jar")
+val mcMaven = loomCache.resolve("minecraftMaven/net/minecraft")
+val intermediaryMcJar = mcMaven.resolve("minecraft-merged-intermediary")
+    .listFiles()
+    ?.firstOrNull { it.name.startsWith(property("minecraft_version") as String) }
+    ?.let { it.resolve("minecraft-merged-intermediary-${it.name}.jar") }
+
+// Make reobf depend on remapJar and feed it both MC jars as classpath roots.
+afterEvaluate {
+    val reobfTask = tasks.named<net.everlastingness.build.ReobfIntermediaryToOfficialTask>("reobfJar").get()
+    reobfTask.dependsOn("remapJar")
+    reobfTask.classpath.set(provider {
+        buildList {
+            if (intermediaryMcJar?.exists() == true) add(intermediaryMcJar.toPath())
+            if (vanillaClientJar.exists()) add(vanillaClientJar.toPath())
+        }
+    })
+}
+
+tasks.named("build") {
+    dependsOn("reobfJar")
+}
