@@ -78,12 +78,18 @@ tasks.withType<JavaCompile> {
     }
 }
 
-// Bundle the generated refmap into the jar so the reobfuscated production
-// artifact carries the MCP→SRG resolution data. The refmap is written during
-// compileJava, so we wire the jar task to depend on and pull it in.
+// Bundle the generated refmap AND the :common/:modules class outputs into the
+// jar. RFG's reobfJar only processes :v1_7_10 source; the shared libraries
+// (:common, :modules) must be included so the production jar is self-contained.
 val refmapFile = layout.buildDirectory.file("mixins.everlastingness.refmap.json")
 tasks.named<Jar>("jar") {
+    dependsOn(":common:jar", ":modules:jar")
     from(refmapFile)
+    // Include :common and :modules compiled class outputs.
+    from(project(":common").layout.buildDirectory.dir("classes/java/main"))
+    from(project(":modules").layout.buildDirectory.dir("classes/java/main"))
+    // Include module service files.
+    from(project(":modules").layout.buildDirectory.dir("resources/main"))
 }
 
 // The reobf task remaps MCP names back to SRG/Notch for the production jar.

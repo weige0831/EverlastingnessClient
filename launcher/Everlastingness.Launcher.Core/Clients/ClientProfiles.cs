@@ -27,16 +27,29 @@ public static class ClientProfiles
         ClientJar = jar,
         // launchwrapper hosts the classloader; mixin provides MixinTweaker which
         // calls MixinBootstrap.start() and registers the mixin transformer.
+        // ASM, Guava, Gson, joptsimple, log4j are Mixin runtime dependencies.
         ExtraClasspath =
         [
             "launchwrapper-1.12.jar",
             "mixin-0.8.7.jar",
+            "asm-9.6.jar",
+            "asm-tree-9.6.jar",
+            "asm-commons-9.6.jar",
+            "guava-15.0.jar",
+            "gson-2.2.4.jar",
+            "jopt-simple-4.5.jar",
+            "log4j-api-2.0-beta9.jar",
+            "log4j-core-2.0-beta9.jar",
             jar
         ],
         TweakClasses =
         [
-            "org.spongepowered.asm.launch.MixinTweaker",
-            "net.everlastingness.client.tweaker.ClientTweaker"
+            // EverlastingnessPreTweaker does everything: exclusions + manual
+            // Mixin bootstrap + config registration + transformer registration.
+            // We do NOT use SpongePowered's MixinTweaker because its static
+            // initializer triggers service discovery before exclusions are set.
+            "net.everlastingness.client.v1_7_10.tweaker.EverlastingnessPreTweaker",
+            "net.everlastingness.client.v1_7_10.tweaker.ClientTweaker"
         ],
         SystemProperties = new Dictionary<string, string>
         {
