@@ -174,8 +174,15 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 - [x] 用游戏自身 `FontRenderer.drawStringWithShadow` 绘制文本(真实 MCP API)
 - [x] **`:v1_7_10:reobfJar` 验证**:编译通过 + refmap 正确映射 `updateCameraAndRender → func_78480_b`,HUD mixin 已在 production jar 中
 
-- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD 在游戏内显示
-- [ ] 更多功能模块:披风 / 按键绑定 / 配置 UI / FPS 优化
+**按键绑定管理(已完成)** — 第二个真实功能模块:
+
+- [x] `KeybindManager`(版本无关,`:common`):可配置的注册/回调 API,上升沿(按下瞬间)触发,非每 tick 重复
+- [x] `MixinMinecraftRunTick`:注入 `runTick()V`(HEAD),每 tick 轮询,用 LWJGL `Keyboard.isKeyDown`(非事件消费,不干扰 MC 自身输入)
+- [x] 演示绑定:按 R 切换 HUD 模块开关(ClientTweaker 注册)
+- [x] **reobf 验证**:refmap 正确映射 `runTick → func_71407_l`,mixin 已在 production jar 中
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键 在游戏内生效
+- [ ] 更多功能模块:披风 / 配置 UI / FPS 优化
 
 ### Phase 4 — 分发
 

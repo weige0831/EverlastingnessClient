@@ -46,6 +46,28 @@ public class ClientTweaker implements ITweaker {
                 Bootstrap.start(mcVersion);
         ModuleDiscoverer.discoverAndRegister(client);
 
+        // Register a demonstration keybind: pressing R (LWJGL Keyboard.KEY_R = 19)
+        // in-game logs a message and toggles the HUD module on/off. This proves
+        // the KeybindManager end-to-end (registry → per-tick poll → callback).
+        net.everlastingness.client.common.keybind.KeybindManager.get().register(
+                "toggle_hud",
+                19, // org.lwjgl.input.Keyboard.KEY_R
+                action -> {
+                    net.everlastingness.client.common.module.Module hud = client.module("hud");
+                    if (hud != null) {
+                        if (hud.isEnabled()) {
+                            client.disableModule("hud");
+                        } else {
+                            client.enableModule("hud");
+                        }
+                        System.out.println("[Everlastingness] HUD " +
+                                (hud.isEnabled() ? "enabled" : "disabled") + " (key R)");
+                    } else {
+                        System.out.println("[Everlastingness] Key R pressed (no HUD module)");
+                    }
+                },
+                "Toggle HUD overlay");
+
         // Per-version mixins (see src/main/java/.../mixin/) are picked up by
         // MixinTweaker via the mixins.everlastingness.json config, which the
         // launcher sets with -Dmixin.configs.
