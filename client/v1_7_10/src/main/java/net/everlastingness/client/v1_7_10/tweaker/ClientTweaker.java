@@ -99,6 +99,23 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
             client.registerModule(new net.everlastingness.client.modules.visual.BlockOutlineModule());
         } catch (Throwable t) { System.err.println("[Everlastingness] Outline module: " + t.getMessage()); }
 
+        // Second batch — matching more Lunar/Badlion features
+        try {
+            client.registerModule(new net.everlastingness.client.modules.hud.ClockArmorHudModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Clock&Armor module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.utility.CoordinateCopyModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] CoordCopy module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.input.SmoothScrollModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] SmoothScroll module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.visual.ZoomModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Zoom module: " + t.getMessage()); }
+
         // Keybinds: register toggle_hud (R) and open_config_gui (RIGHT_SHIFT).
         // These are deferred to when the mixin fires (MC classes available).
         System.out.println("[Everlastingness] ClientTweaker complete — modules registered");
