@@ -6,7 +6,7 @@
 - **客户端核心** — Java,运行时通过 SpongePowered Mixin 注入到原版 Minecraft(不依赖 Forge / Fabric)
 - **多版本矩阵** — 1.7.10、1.8.9、1.12.2(legacy · LaunchWrapper)+ 1.16.5、1.17.1、1.18.2、1.19.x、1.20.x、1.21.x(modern · ModLauncher)
 
-> 当前进度:**Phase 2 完成** —— 启动器端到端可编译运行;legacy `:v1_7_10` reobf 链路跑通;modern `client-modern/:v1_20_x` Loom 链路跑通(静态重映射已验证)。详见[实施进度](#实施进度)。
+> 当前进度:**Phase 3b 完成** —— 启动器可编译运行;legacy `:v1_7_10` reobf 链路跑通;modern `client-modern/:v1_20_x` 完整链路(Loom→remap→reobf→standalone Mixin host→打包 agent jar)全部跑通。详见[实施进度](#实施进度)。
 
 ---
 
@@ -143,13 +143,32 @@ cd client
 - [x] **`remapJar` 成功**:产出 `everlastingness-1.20.1-1.0.0.jar`(含 `MixinGameRenderer`/`EverlastingnessAgent`/manifest Premain-Class)
 - [x] **静态重映射已验证**:反编译确认 `@Mixin(class_757)` + `@Inject(method_3192)` —— Yarn 名已正确烧入 intermediary 名
 
-> ⚠️ **intermediary→official reobf gap(已知,Phase 3 任务)**:Loom 在构建期把 mixin 字节码静态重映射到 **intermediary** 命名空间(`class_757`/`method_3192`),但 vanilla 运行时类是 **official/混淆名**。当前 agent jar 的 mixin 在真机运行时会因名字不匹配而静默失效。解决方式:在 agent attach 时或构建期用 Tiny Remapper 做 intermediary→official reobf。这是真实的工程任务,非一行配置。
+### ⏭ Phase 3a — intermediary→official reobf(已完成)
 
-### ⏭ Phase 3 — 真机端到端 + 功能模块(下一步)
+- [x] 打包 Fabric intermediary 映射(1.20.1,`tiny 2 0 official intermediary`)
+- [x] `buildSrc` 自定义 Gradle 任务 `ReobfIntermediaryToOfficialTask`(Tiny Remapper + MixinExtension)
+- [x] 关键修复:MixinExtension 重写 `@Inject` 方法字符串需把 **intermediary MC jar** 加入 `readClassPath`(否则只重写 `@Mixin` 类值,`@Inject` 静默跳过)
+- [x] **reobf 验证**:`@Mixin(fjq)` + `@Inject(method=a(FJZ)V)` —— `class_757`→`fjq`、`method_3192`→`a`,正是 1.20.1 `GameRenderer.render` 的运行时混淆名
 
-- [ ] 解决 intermediary→official reobf gap(modern 真机可用性)
-- [ ] 真机验证:启动器登录 → 下载 1.7.10 → 注入启动 → HUD 在游戏内显示
-- [ ] 功能模块:FPS 优化 / HUD / 披风 / 按键绑定 / 配置 UI
+### ⏭ Phase 3b — standalone Mixin 服务宿主(已完成)
+
+modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本阶段实现了完整的 standalone Mixin host:
+
+- [x] `StandaloneMixinServiceBootstrap` + `StandaloneMixinService`(extends `MixinServiceAbstract`,无需 LaunchWrapper)
+- [x] `StandaloneClassProvider` / `StandaloneBytecodeProvider` / `StandaloneClassTracker`(自实现 IMixinService 所需 providers)
+- [x] `MixinClassFileTransformer`(把 `IMixinTransformer.transformClassBytes` 桥接到 JVM `ClassFileTransformer`)
+- [x] `EverlastingnessAgent.premain`:发现服务 → `MixinBootstrap.init()` → 取 `IMixinTransformerFactory` → `Mixins.addConfiguration` → 注册 transformer
+- [x] ServiceLoader 注册(`META-INF/services/...IMixinService[Bootstrap]`)
+- [x] `MergeAgentDepsTask`:把 reobf jar 与 Mixin + ASM 合并成单个 standalone agent jar
+- [x] **编译验证**:`:v1_20_x:compileJava` BUILD SUCCESSFUL;**最终 agent jar** `everlastingness-1.20.1-1.0.0-agent.jar`(2.9MB)含 host 类 + Mixin 核心 + ASM + 合并后的 service 文件 + Premain-Class manifest
+- [ ] ⚠️ **真机运行未验证**:此处实现了完整的 standalone host 并通过编译,但 Mixin 在真机 MC 上的实际应用需联网真机环境测试(本会话网络/无 MC 运行时)。这是唯一未闭环的验证点
+
+> **诚实说明**:Phase 3b 是整个项目不确定性最高的部分(研究标记 uncertainty: high)。代码已对照 Mixin 0.8.7 源码逐一实现接口契约并编译通过,但 standalone host 在真机的实际生效(服务被 ServiceLoader 选中、transformer 正确应用、无重入/类加载冲突)只能通过真机注入测试确认。真机测试(登录→下载 1.7.10/1.20.1→注入启动→HUD 显示)是 Phase 3c 的首要任务。
+
+### ⏭ Phase 3c — 功能模块 + 真机端到端(下一步)
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → mixin 在游戏内生效
+- [ ] 功能模块:FPS 优化 / HUD 覆盖层 / 披风 / 按键绑定 / 配置 UI
 
 ### Phase 4 — 分发
 

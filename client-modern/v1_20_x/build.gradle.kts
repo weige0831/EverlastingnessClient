@@ -42,10 +42,24 @@ dependencies {
     mappings("net.fabricmc:yarn:${property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
 
+    // The standalone Mixin host (StandaloneMixinService, MixinClassFileTransformer,
+    // the agent premain) compiles directly against the Mixin + ASM API. Provided
+    // at runtime by the mixin jar shaded into the agent (see processIncludeJars
+    // below) — compileOnly here so it isn't duplicated in the output.
+    compileOnly("org.spongepowered:mixin:0.8.7")
+    compileOnly("org.ow2.asm:asm-tree:9.6")
+
+    // Bundle Mixin + ASM into the production agent jar so the standalone host
+    // works without Fabric Loader. Loom's processIncludeJars includes these.
+    include("org.spongepowered:mixin:0.8.7")
+    include("org.ow2.asm:asm-tree:9.6")
+    include("org.ow2.asm:asm:9.6")
+    include("org.ow2.asm:asm-commons:9.6")
+    include("org.ow2.asm:asm-util:9.6")
+
     // NOTE: do NOT declare the Mixin annotation processor here. Loom wires it
-    // automatically against the chosen mappings (and its own refmap handling).
-    // Declaring it manually caused the raw MCP AP to be used, which then could
-    // not resolve Yarn-named targets like `render`.
+    // automatically against the chosen mappings. Declaring it manually caused
+    // the raw MCP AP to be used, which then could not resolve Yarn targets.
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -127,4 +141,34 @@ afterEvaluate {
 
 tasks.named("build") {
     dependsOn("reobfJar")
+}
+
+// ============================================================================
+// Produce the final standalone agent jar: reobf output + Mixin + ASM merged
+// ============================================================================
+//
+// The agent runs under -javaagent on the system classloader, so Mixin + ASM
+// (needed to bootstrap the standalone host) must be inside the single jar.
+// Loom's `include` rejected the ASM semver, so we merge explicitly here.
+val runtimeDepsForAgent = configurations.detachedConfiguration(
+    dependencies.create("org.spongepowered:mixin:0.8.7"),
+    dependencies.create("org.ow2.asm:asm-tree:9.6"),
+    dependencies.create("org.ow2.asm:asm:9.6"),
+    dependencies.create("org.ow2.asm:asm-commons:9.6"),
+    dependencies.create("org.ow2.asm:asm-util:9.6")
+)
+
+val packageAgent by tasks.registering(net.everlastingness.build.MergeAgentDepsTask::class) {
+    group = "everlastingness"
+    description = "Merge the reobf'd client jar with Mixin + ASM into the standalone agent jar."
+
+    baseJar.set(tasks.named<net.everlastingness.build.ReobfIntermediaryToOfficialTask>("reobfJar").flatMap { it.outputJar })
+    outputJar.set(layout.buildDirectory.file(
+        "libs/${base.archivesName.get()}-${version}-agent.jar"))
+    dependencyJars.set(provider { runtimeDepsForAgent.files.toList().map { it.toPath() } })
+    dependsOn("reobfJar")
+}
+
+tasks.named("build") {
+    dependsOn("packageAgent")
 }
