@@ -80,12 +80,30 @@ public class MixinEntityRendererHud {
                 player.posX, player.posY, player.posZ);
         String fps = String.format("FPS: %d", (int) Math.round(smoothedFps));
 
-        // Shadowed white text at (4, 4) and a second line below it. 0xFFFFFFFF
-        // is opaque white.
+        // CPS line — read from CpsCounterModule if available
+        String cps = "";
+        EverlastingnessClient evClient = EverlastingnessClient.get();
+        if (evClient != null) {
+            net.everlastingness.client.common.module.Module cpsMod = evClient.module("cps_counter");
+            if (cpsMod instanceof net.everlastingness.client.modules.input.CpsCounterModule) {
+                net.everlastingness.client.modules.input.CpsCounterModule cpsM =
+                    (net.everlastingness.client.modules.input.CpsCounterModule) cpsMod;
+                if (cpsMod.isEnabled()) {
+                    cps = String.format("CPS: [%d | %d]", cpsM.getLeftCps(), cpsM.getRightCps());
+                }
+            }
+        }
+
+        // Shadowed white text stacked vertically. 0xFFFFFFFF is opaque white.
         int x = 4;
         int y = 4;
         int color = 0xFFFFFFFF;
         font.drawStringWithShadow(coords, x, y, color);
-        font.drawStringWithShadow(fps, x, y + font.FONT_HEIGHT + 1, color);
+        y += font.FONT_HEIGHT + 1;
+        font.drawStringWithShadow(fps, x, y, color);
+        if (!cps.isEmpty()) {
+            y += font.FONT_HEIGHT + 1;
+            font.drawStringWithShadow(cps, x, y, color);
+        }
     }
 }
