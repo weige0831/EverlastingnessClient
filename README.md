@@ -6,7 +6,7 @@
 - **客户端核心** — Java,运行时通过 SpongePowered Mixin 注入到原版 Minecraft(不依赖 Forge / Fabric)
 - **多版本矩阵** — 1.7.10、1.8.9、1.12.2(legacy · LaunchWrapper)+ 1.16.5、1.17.1、1.18.2、1.19.x、1.20.x、1.21.x(modern · ModLauncher)
 
-> 当前进度:**Phase 1 客户端构建链路完成** —— 启动器端到端可编译运行;客户端 `:v1_7_10` 全流程跑通(RFG setup → MCP 反编译 → Mixin 编译 → reobf → refmap 打包)。详见[实施进度](#实施进度)。
+> 当前进度:**Phase 2 完成** —— 启动器端到端可编译运行;legacy `:v1_7_10` reobf 链路跑通;modern `client-modern/:v1_20_x` Loom 链路跑通(静态重映射已验证)。详见[实施进度](#实施进度)。
 
 ---
 
@@ -17,11 +17,13 @@ EverlastingnessClient/
 ├── launcher/                          # C# 启动器(.NET 8 + Avalonia)
 │   ├── Everlastingness.Launcher/      #   Avalonia UI 主程序(VM/Views)
 │   └── Everlastingness.Launcher.Core/ #   认证 / 下载 / 启动 / 注入 核心服务
-└── client/                            # Java 客户端(Gradle 多项目)
-    ├── common/                        #   版本无关:事件总线 / 模块框架 / Bootstrap
-    ├── agent/                         #   Java Agent premain(modern 版本注入入口)
-    ├── modules/                       #   功能模块(HUD 等),版本无关
-    └── v1_7_10/                       #   1.7.10 子项目(RetroFuturaGradle + MCP + Mixin)
+├── client/                            # Java 客户端 — legacy 构建(Gradle 8.8)
+│   ├── common/                        #   版本无关:事件总线 / 模块框架 / Bootstrap
+│   ├── agent/                         #   Java Agent premain(modern 版本注入入口)
+│   ├── modules/                       #   功能模块(HUD 等),版本无关
+│   └── v1_7_10/                       #   1.7.10 子项目(RetroFuturaGradle + MCP + Mixin)
+└── client-modern/                     # Java 客户端 — modern 构建(Gradle 9.5.1)
+    └── v1_20_x/                       #   1.20.1 子项目(Fabric Loom 1.17.18 + Yarn + Mixin)
 ```
 
 ---
@@ -132,14 +134,26 @@ cd client
 - [x] Mixin 注解处理器配置(`-AreobfSrgFile` 指向 `mcp-srg.srg`,`-AoutRefMapFile` 生成 refmap)
 - [x] **`reobfJar` 成功**:产出 `v1_7_10-1.0.0-SNAPSHOT.jar`(含 `MixinEntityRenderer`/`ClientTweaker`/`mixins.everlastingness.json`/`mixins.everlastingness.refmap.json`),refmap 正确映射 `updateCameraAndRender → func_78480_b`
 
-### ⏭ Phase 2 — 真机端到端 + 多版本(下一步)
+### ⏭ Phase 2 — 1.20.x modern 版本(Loom)(已完成)
 
+- [x] `client-modern/` 独立 Gradle 构建目录(**Gradle 9.5.1 + Loom 1.17.18**;旧版 Loom 已从 Fabric Maven 下架)
+- [x] `pluginManagement.resolutionStrategy` 映射 `net.fabricmc.fabric-loom-remap` 插件
+- [x] `:v1_20_x` 子项目 + `MixinGameRenderer`(Yarn 目标 `render(FJZ)V`)
+- [x] 关键修复:**移除显式 Mixin 注解处理器声明**,让 Loom 自动配置(否则用错 MCP AP,无法解析 Yarn 名)
+- [x] **`remapJar` 成功**:产出 `everlastingness-1.20.1-1.0.0.jar`(含 `MixinGameRenderer`/`EverlastingnessAgent`/manifest Premain-Class)
+- [x] **静态重映射已验证**:反编译确认 `@Mixin(class_757)` + `@Inject(method_3192)` —— Yarn 名已正确烧入 intermediary 名
+
+> ⚠️ **intermediary→official reobf gap(已知,Phase 3 任务)**:Loom 在构建期把 mixin 字节码静态重映射到 **intermediary** 命名空间(`class_757`/`method_3192`),但 vanilla 运行时类是 **official/混淆名**。当前 agent jar 的 mixin 在真机运行时会因名字不匹配而静默失效。解决方式:在 agent attach 时或构建期用 Tiny Remapper 做 intermediary→official reobf。这是真实的工程任务,非一行配置。
+
+### ⏭ Phase 3 — 真机端到端 + 功能模块(下一步)
+
+- [ ] 解决 intermediary→official reobf gap(modern 真机可用性)
 - [ ] 真机验证:启动器登录 → 下载 1.7.10 → 注入启动 → HUD 在游戏内显示
-- [ ] 1.20.x modern 版本(Fabric Loom)子项目与 agent 注入链路
+- [ ] 功能模块:FPS 优化 / HUD / 披风 / 按键绑定 / 配置 UI
 
-### Phase 3–4 — 功能模块 + 分发
+### Phase 4 — 分发
 
-详见历史计划文档。
+反作弊兼容性测试、安装包(Windows/macOS/Linux)、用户文档。
 
 ---
 

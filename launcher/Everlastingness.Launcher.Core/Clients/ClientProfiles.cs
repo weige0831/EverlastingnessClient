@@ -48,29 +48,40 @@ public static class ClientProfiles
     };
 
     /// <summary>
-    /// A modern-era profile using ModLauncher/agent injection. The client jar
-    /// is built with Fabric Loom (Mojang mappings) but launched standalone —
-    /// Fabric Loader is NOT required at runtime.
+    /// A modern-era profile using the Java-agent injection path. The client jar
+    /// is built with Fabric Loom (Yarn mappings) and its manifest declares
+    /// <c>Premain-Class = ...EverlastingnessAgent</c>, so the launcher injects it
+    /// with <c>-javaagent:&lt;jar&gt;</c>. Fabric Loader is NOT required at runtime.
     /// </summary>
+    /// <remarks>
+    /// Loom statically remaps the mixin bytecode to the <b>intermediary</b>
+    /// namespace at build time (verified: <c>GameRenderer</c>→<c>class_757</c>,
+    /// <c>render</c>→<c>method_3192</c>). Vanilla runtime classes, however, are
+    /// <b>official/obfuscated</b> names. So before the agent jar actually applies
+    /// mixins at runtime, the launcher (or a build step) must perform
+    /// intermediary→official reobfuscation. This is tracked as the
+    /// "intermediary→official reobf gap" — see README.
+    /// </remarks>
     private static EverlastingnessClientProfile Modern(string mc, string jar) => new()
     {
         MinecraftVersion = mc,
         Era = MappingEra.ModernModLauncher,
         ClientJar = jar,
+        // The agent jar bundles the client code + Premain-Class in its manifest.
+        // Runtime Mixin support is supplied by these libs alongside it.
         ExtraClasspath =
         [
-            "modlauncher-10.x.jar",
             "mixin-0.8.7.jar",
             jar
         ],
         TweakClasses = [],
         SystemProperties = new Dictionary<string, string>
         {
-            ["mixin.configs"] = "mixins.everlastingness.json",
+            ["mixin.configs"] = "everlastingness.mixins.json",
             ["everlastingness.version"] = mc
         },
         // 1.13+ vanilla still ships net.minecraft.client.main.Main as the entry
-        // point; ModLauncher hooks in as a -javaagent before Main runs.
+        // point; the agent hooks in via -javaagent before Main runs.
         MainClass = "net.minecraft.client.main.Main"
     };
 
