@@ -35,13 +35,13 @@ cp "$SRC_JAR" "$CLIENT_DIR/everlastingness-1.7.10.jar"
 #    classpath (see ClientProfiles Legacy profile). These are declared by name
 #    in the launcher; they must be present for injection to bootstrap.
 declare -a RUNTIME_JARS=(
-  "mixin-0.8.7.jar:org/spongepowered/mixin:https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.7/mixin-0.8.7.jar"
-  "launchwrapper-1.12.jar:net/minecraft/launchwrapper:https://repo.spongepowered.org/repository/maven-public/net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar"
+  "mixin-0.8.7.jar|https://repo.spongepowered.org/repository/maven-public/org/spongepowered/mixin/0.8.7/mixin-0.8.7.jar"
+  "launchwrapper-1.12.jar|https://repo.spongepowered.org/repository/maven-public/net/minecraft/launchwrapper/1.12/launchwrapper-1.12.jar"
 )
 
 staged=()
 for entry in "${RUNTIME_JARS[@]}"; do
-  name="${entry%%:*}"; url="${entry##*:}"
+  name="${entry%%|*}"; url="${entry##*|}"
   dest="$CLIENT_DIR/$name"
   if [[ -f "$dest" ]]; then
     staged+=("ok  (existing)  $name")

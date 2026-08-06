@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Everlastingness.Launcher", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Everlastingness.Launcher.Core", "Everlastingness.Launcher.Core\Everlastingness.Launcher.Core.csproj", "{29BC0BEC-5E0A-4AB8-BC99-9CAE79EC4BDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Everlastingness.Launcher.TestHarness", "Everlastingness.Launcher.TestHarness\Everlastingness.Launcher.TestHarness.csproj", "{0A94B46E-FDCD-42FE-A8CB-08CFAFCB7107}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{29BC0BEC-5E0A-4AB8-BC99-9CAE79EC4BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29BC0BEC-5E0A-4AB8-BC99-9CAE79EC4BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29BC0BEC-5E0A-4AB8-BC99-9CAE79EC4BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A94B46E-FDCD-42FE-A8CB-08CFAFCB7107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A94B46E-FDCD-42FE-A8CB-08CFAFCB7107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A94B46E-FDCD-42FE-A8CB-08CFAFCB7107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A94B46E-FDCD-42FE-A8CB-08CFAFCB7107}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
