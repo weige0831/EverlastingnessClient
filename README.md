@@ -207,9 +207,14 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 
 - [ ] 真机验证:启动器登录 → 下载 → 注入启动 → 全部模块(HUD/按键/GUI/披风/FPS)在游戏内生效
 
-### Phase 4 — 分发
+### Phase 4 — 分发(可交付部分已完成)
 
-反作弊兼容性测试、安装包(Windows/macOS/Linux)、用户文档。
+- [x] **用户文档**:[`docs/user-guide.md`](docs/user-guide.md) — 安装/配置/启动/模块使用/FAQ
+- [x] **GitHub Actions CI**:[`.github/workflows/build.yml`](.github/workflows/build.yml) — 启动器(dotnet publish, win/linux/osx)+ 客户端(:v1_7_10 reobf / :v1_20_x remap+reobf+packageAgent),tag 触发 Release
+- [x] **Windows 安装包脚本**:[`scripts/build-windows-installer.ps1`](scripts/build-windows-installer.ps1) — Inno Setup 安装包(自包含单文件 + 中英文 + 桌面快捷方式)
+- [x] **反作弊兼容性自测清单**:[`docs/anticheat-checklist.md`](docs/anticheat-checklist.md) — 服务器规则自查 + 模块风险评级 + 真机自测步骤
+- [x] **真机端到端验证步骤**:[`docs/e2e-verification-steps.md`](docs/e2e-verification-steps.md) — 供本地环境执行的 6 步闭环清单(本开发会话在无 GUI 沙箱,真机验证需本地执行)
+- [ ] 真机端到端验证执行(需桌面 GUI + MC 1.7.10 运行时 + 微软账号,沙箱环境物理阻塞)
 
 ---
 
