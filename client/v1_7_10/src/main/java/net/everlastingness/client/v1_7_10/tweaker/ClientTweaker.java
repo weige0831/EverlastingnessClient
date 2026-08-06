@@ -78,6 +78,27 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
             System.err.println("[Everlastingness] FPS module registration deferred: " + t.getMessage());
         }
 
+        // New modules — matching Lunar/Badlion feature matrix
+        try {
+            client.registerModule(new net.everlastingness.client.modules.input.CpsCounterModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] CPS module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.visual.FullbrightModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Fullbright module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.camera.PerspectiveModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Perspective module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.visual.CustomCrosshairModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Crosshair module: " + t.getMessage()); }
+
+        try {
+            client.registerModule(new net.everlastingness.client.modules.visual.BlockOutlineModule());
+        } catch (Throwable t) { System.err.println("[Everlastingness] Outline module: " + t.getMessage()); }
+
         // Keybinds: register toggle_hud (R) and open_config_gui (RIGHT_SHIFT).
         // These are deferred to when the mixin fires (MC classes available).
         System.out.println("[Everlastingness] ClientTweaker complete — modules registered");
