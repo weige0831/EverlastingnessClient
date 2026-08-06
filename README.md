@@ -181,8 +181,15 @@ modern MC(1.16+/Java 17)无 LaunchWrapper,Mixin 需要一个宿主服务。本�
 - [x] 演示绑定:按 R 切换 HUD 模块开关(ClientTweaker 注册)
 - [x] **reobf 验证**:refmap 正确映射 `runTick → func_71407_l`,mixin 已在 production jar 中
 
-- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键 在游戏内生效
-- [ ] 更多功能模块:披风 / 配置 UI / FPS 优化
+**配置 UI(已完成)** — 第三个真实功能模块:
+
+- [x] `ModuleConfigGuiScreen`(extends `GuiScreen`):列出所有已注册模块 + 开关按钮,点击切换启用状态,带 "Done" 关闭按钮
+- [x] 真实 MC GUI 栈交互:`initGui`/`drawScreen`/`actionPerformed`/`drawDefaultBackground` + `FontRenderer.drawStringWithShadow`(均为 MCP API)
+- [x] 绑定打开键:RIGHT_SHIFT(LWJGL KEY_RSHIFT=60)经 KeybindManager → `Minecraft.displayGuiScreen`
+- [x] **reobf 验证**:编译通过,`ModuleConfigGuiScreen` 已在 production jar,reobf 正确
+
+- [ ] 真机验证:启动器登录 → 下载 → 注入启动 → HUD/按键/GUI 在游戏内生效
+- [ ] 更多功能模块:披风 / FPS 优化
 
 ### Phase 4 — 分发
 

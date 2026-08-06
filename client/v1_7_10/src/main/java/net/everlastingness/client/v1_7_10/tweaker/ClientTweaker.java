@@ -68,6 +68,23 @@ public class ClientTweaker implements ITweaker {
                 },
                 "Toggle HUD overlay");
 
+        // Open the in-game config GUI with RIGHT_SHIFT (LWJGL Keyboard.KEY_RSHIFT = 60).
+        // The GUI lists every registered module with a toggle button. Opening a
+        // GuiScreen must happen on the main/render thread; the KeybindManager
+        // callback runs on the game tick thread (runTick), which is correct.
+        net.everlastingness.client.common.keybind.KeybindManager.get().register(
+                "open_config_gui",
+                60, // org.lwjgl.input.Keyboard.KEY_RSHIFT
+                action -> {
+                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+                    if (mc != null && (mc.currentScreen == null)) {
+                        mc.displayGuiScreen(
+                                new net.everlastingness.client.v1_7_10.gui.ModuleConfigGuiScreen());
+                        System.out.println("[Everlastingness] Config GUI opened (key RIGHT_SHIFT)");
+                    }
+                },
+                "Open config GUI");
+
         // Per-version mixins (see src/main/java/.../mixin/) are picked up by
         // MixinTweaker via the mixins.everlastingness.json config, which the
         // launcher sets with -Dmixin.configs.
