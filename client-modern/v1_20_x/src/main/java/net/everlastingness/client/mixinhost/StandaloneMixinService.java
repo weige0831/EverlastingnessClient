@@ -7,6 +7,9 @@ import java.util.Collections;
 import org.spongepowered.asm.launch.platform.container.ContainerHandleVirtual;
 import org.spongepowered.asm.launch.platform.container.IContainerHandle;
 import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.launch.MixinInitialisationError;
+import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
+import org.spongepowered.asm.mixin.transformer.IMixinTransformerFactory;
 import org.spongepowered.asm.service.IClassBytecodeProvider;
 import org.spongepowered.asm.service.IClassProvider;
 import org.spongepowered.asm.service.IClassTracker;
@@ -30,11 +33,24 @@ import org.spongepowered.asm.service.MixinServiceAbstract;
  * {@link #isValid()} returns {@code true} unconditionally so this service is
  * selected over any other (e.g. the launchwrapper one which is not present).</p>
  */
-public final class StandaloneMixinService extends MixinServiceAbstract {
+public final class StandaloneMixinService extends MixinServiceAbstract implements IMixinTransformerFactory {
 
     private final IClassProvider classProvider = new StandaloneClassProvider();
     private final IClassBytecodeProvider bytecodeProvider = new StandaloneBytecodeProvider();
     private final IClassTracker classTracker = new StandaloneClassTracker();
+
+    @Override
+    public IMixinTransformer createTransformer() throws MixinInitialisationError {
+        // MixinTransformer is package-private; instantiate via reflection.
+        try {
+            Class<?> clazz = Class.forName("org.spongepowered.asm.mixin.transformer.MixinTransformer");
+            java.lang.reflect.Constructor<?> ctor = clazz.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            return (IMixinTransformer) ctor.newInstance();
+        } catch (Throwable t) {
+            throw new MixinInitialisationError("Could not create MixinTransformer: " + t);
+        }
+    }
 
     @Override
     public String getName() {
@@ -76,8 +92,11 @@ public final class StandaloneMixinService extends MixinServiceAbstract {
 
     @Override
     public Collection<String> getPlatformAgents() {
-        // No platform agents (no Fabric/Forge integration).
-        return Collections.emptyList();
+        // The ClientPlatformAgent reports the side as CLIENT so the config's
+        // "client" mixin list is selected (with no agents the side resolves to
+        // UNKNOWN and no client-listed mixin is ever applied).
+        return Collections.singletonList(
+                "net.everlastingness.client.mixinhost.ClientPlatformAgent");
     }
 
     @Override
@@ -94,5 +113,12 @@ public final class StandaloneMixinService extends MixinServiceAbstract {
     public MixinEnvironment.CompatibilityLevel getMaxCompatibilityLevel() {
         // MC 1.20.x runs on Java 17.
         return MixinEnvironment.CompatibilityLevel.JAVA_17;
+    }
+
+    @Override
+    protected org.spongepowered.asm.logging.ILogger createLogger(String name) {
+        // The default adapter discards ALL Mixin log output — including the
+        // errors explaining why a mixin was rejected. Route to stderr.
+        return new org.spongepowered.asm.logging.LoggerAdapterConsole(name);
     }
 }

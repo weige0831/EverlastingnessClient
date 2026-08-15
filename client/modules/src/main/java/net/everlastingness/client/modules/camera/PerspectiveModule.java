@@ -48,6 +48,13 @@ public class PerspectiveModule extends AbstractModule {
                       perspective == 1 ? "3rd back" : "3rd front"));
     }
 
+    /** Set the perspective directly (0=1st, 1=3rd-back, 2=3rd-front). */
+    public void setPerspective(int value) {
+        perspective = ((value % 3) + 3) % 3;
+        LOGGER.info("Perspective set: " + (perspective == 0 ? "1st person" :
+                      perspective == 1 ? "3rd back" : "3rd front"));
+    }
+
     /** Toggle free-look (called by keybind mixin). */
     public void toggleFreeLook() {
         freeLook = !freeLook;

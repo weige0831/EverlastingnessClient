@@ -1,0 +1,101 @@
+// Everlastingness client module for Minecraft 1.16.5-1.20.x (modern era).
+// Loom 1.13.6 + Gradle 8.14 (avoids the mappingio propagateOuterClassNames bug
+// present in Loom 1.17.x which calls a method absent from all released
+// mapping-io jars).
+
+buildscript {
+    repositories {
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+        maven { url = "file:///c/Users/songd/.everlastingness/maven-patches"; name = "Patches" }
+        maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+        mavenCentral()
+    }
+    repositories {
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+        maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:1.6.10"
+    }
+}
+
+apply plugin: "fabric-loom"
+apply plugin: "maven-publish"
+
+version = property("mod_version")
+group = property("maven_group")
+
+base {
+    archivesName = "everlastingness-${property('minecraft_version')}"
+}
+
+repositories {
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+    mavenCentral()
+    maven { url = "https://repo.spongepowered.org/repository/maven-public/"; name = "Sponge Maven" }
+    maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+}
+
+loom {
+    mods {
+        everlastingness {
+            sourceSet sourceSets.main
+        }
+    }
+    // 1.21.9+ ships a new unpick format Loom cannot parse; we never use the
+    // unpicked (named-parameter) data anyway — mixin remapping only needs the
+    // tiny mappings.
+    enableTransitiveAccessWideners = false
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${property('minecraft_version')}"
+    mappings "net.fabricmc:yarn:${property("yarn_mappings")}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${property('loader_version')}"
+
+    compileOnly "org.spongepowered:mixin:0.8.7"
+    compileOnly "org.ow2.asm:asm-tree:9.6"
+    compileOnly files("F:/zcode/EverlastingnessClient/client/common/build/libs/common-1.0.0-SNAPSHOT.jar")
+    compileOnly files("F:/zcode/EverlastingnessClient/client/modules/build/libs/modules-1.0.0-SNAPSHOT.jar")
+
+    include "org.spongepowered:mixin:0.8.7"
+    include "org.ow2.asm:asm-tree:9.6"
+    include "org.ow2.asm:asm:9.6"
+    include "org.ow2.asm:asm-commons:9.6"
+    include "org.ow2.asm:asm-util:9.6"
+    include "org.ow2.asm:asm-analysis:9.6"
+}
+
+// Mixin annotation processor args (Loom wires the processor; we just pass
+// the refmap output path and the reobf SRG file for Yarn->official remapping).
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+        "-AoutRefMapFile=${layout.buildDirectory.file('everlastingness.refmap.json').get().asFile.absolutePath}",
+        "-AdefaultObfuscationEnv=searge"
+    ]
+    options.encoding = "UTF-8"
+}
+
+processResources {
+    inputs.property "version", project.version
+}
+
+jar {
+    from(layout.buildDirectory.file('everlastingness.refmap.json')) {
+        into ''
+        // include only if exists
+    }
+    // Preserve the MANIFEST with Premain-Class for the agent.
+    manifest {
+        attributes(
+            "Premain-Class": "net.everlastingness.client.agent.EverlastingnessAgent",
+            "Agent-Class": "net.everlastingness.client.agent.EverlastingnessAgent",
+            "Can-Retransform-Classes": "true",
+            "Implementation-Version": project.version
+        )
+    }
+}
+
+// Shade :common and :modules if available; for now the modern client is
+// self-contained (no shared :common dependency).

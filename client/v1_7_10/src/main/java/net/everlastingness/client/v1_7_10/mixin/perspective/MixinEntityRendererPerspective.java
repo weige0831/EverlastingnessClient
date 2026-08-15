@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityRenderer.class)
 public class MixinEntityRendererPerspective {
 
-    @Inject(method = "setupCameraTransform", at = @At("HEAD"))
+    @Inject(remap = false, method = "func_78479_a(FI)V", at = @At("HEAD"))
     private void everlastingness$overridePerspective(float partialTicks, int renderPass, CallbackInfo ci) {
         EverlastingnessClient client = EverlastingnessClient.get();
         if (client == null) return;

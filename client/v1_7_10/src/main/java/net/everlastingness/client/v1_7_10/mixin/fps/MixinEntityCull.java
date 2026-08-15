@@ -39,8 +39,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RenderManager.class)
 public class MixinEntityCull {
 
-    @Inject(
-        method = "renderEntitySimple(Lnet/minecraft/entity/Entity;F)Z",
+    @Inject(remap = false, 
+        method = "func_147937_a(Lnet/minecraft/entity/Entity;F)Z",
         at = @At("HEAD"),
         cancellable = true)
     private void everlastingness$cullDistantEntity(

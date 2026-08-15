@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EntityRenderer.class)
 public class MixinEntityRendererZoom {
 
-    @Inject(method = "getFOVModifier", at = @At("RETURN"), cancellable = true)
+    @Inject(remap = false, method = "func_78481_a(FZ)F", at = @At("RETURN"), cancellable = true)
     private void everlastingness$zoom(float partialTicks, boolean useFOVSetting,
                                       CallbackInfoReturnable<Float> cir) {
         EverlastingnessClient client = EverlastingnessClient.get();

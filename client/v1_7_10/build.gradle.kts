@@ -3,6 +3,8 @@
 // RetroFuturaGradle (RFG) is the only MC-1.7.10 Gradle toolchain in active
 // maintenance: it sets up a deobfuscated (MCP) dev environment with Mixin
 // support and produces a reobfuscated jar for the launcher to inject.
+
+import java.io.File
 //
 // RFG supports Gradle 7.6–8.8; the wrapper at the repo root pins 8.8.
 // (Modern versions 1.16.5+ will live in a SEPARATE Gradle build because Fabric
@@ -82,8 +84,80 @@ tasks.withType<JavaCompile> {
 // jar. RFG's reobfJar only processes :v1_7_10 source; the shared libraries
 // (:common, :modules) must be included so the production jar is self-contained.
 val refmapFile = layout.buildDirectory.file("mixins.everlastingness.refmap.json")
+
+// Post-process the refmap to add a "notch" data section. MC 1.7.10 ships with
+// NOTCH-obfuscated class names (e.g. blt) but SRG method names (func_*). The
+// annotation processor's reobfSrgFile (mcp-srg.srg) only emits method remaps
+// and leaves class names in MCP/SRG form — which the runtime MC jar cannot
+// resolve (its classes are notch-named). We build a notch section that rewrites
+// the owner class to its notch name using notch-srg.srg (notch→SRG class),
+// inverted. At runtime we set mixin.env.refMapRemappingEnv=notch so Mixin picks
+// this section and resolves Lblt;func_* correctly.
+val notchSrg = file("$forgeConfDir/notch-srg.srg")
+val patchRefmap = tasks.register("patchRefmapForNotch") {
+    dependsOn("compileJava") // refmap emitted by the annotation processor during compile
+    val refmapPath = refmapFile.get().asFile
+    val notchSrgPath = notchSrg
+    // Do NOT declare inputs.file for refmapPath (it doesn't exist at config
+    // time); declare the action inputs lazily instead.
+    doLast {
+        if (!refmapPath.exists() || !notchSrgPath.exists()) {
+            logger.warn("patchRefmapForNotch: refmap or notch-srg.srg missing, skipping")
+            return@doLast
+        }
+        // Build SRG-class → notch-class map from notch-srg.srg (CL: <notch> <srg>).
+        val srgToNotch = HashMap<String, String>()
+        notchSrgPath.useLines { lines ->
+            for (line in lines) {
+                if (line.startsWith("CL: ")) {
+                    val parts = line.split(" ")
+                    if (parts.size >= 3) {
+                        // parts[1] = notch, parts[2] = srg class name
+                        srgToNotch[parts[2]] = parts[1]
+                    }
+                }
+            }
+        }
+        logger.lifecycle("patchRefmapForNotch: loaded ${srgToNotch.size} notch class mappings")
+
+        // Read the existing refmap JSON and add a "notch" data section by
+        // rewriting the owner class in each "searge" entry.
+        val gson = com.google.gson.GsonBuilder().setPrettyPrinting().create()
+        val json = gson.fromJson(refmapPath.readText(), Map::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val data = json["data"] as MutableMap<String, MutableMap<String, MutableMap<String, String>>>
+        val searge = data["searge"]
+        if (searge != null) {
+            val notch = LinkedHashMap<String, MutableMap<String, String>>()
+            for ((mixinName, methodMap) in searge) {
+                val remapped = LinkedHashMap<String, String>()
+                for ((methodName, ref) in methodMap) {
+                    // ref looks like "Lnet/minecraft/.../EntityRenderer;func_xxx(...)V"
+                    // Rewrite the owner (between L and ;) to its notch name.
+                    remapped[methodName] = rewriteOwner(ref, srgToNotch)
+                }
+                notch[mixinName] = remapped
+            }
+            data["notch"] = notch
+        }
+        // Rebuild the top-level "mappings" too (used as fallback). Leave as-is.
+
+        refmapPath.writeText(gson.toJson(json))
+        logger.lifecycle("patchRefmapForNotch: added 'notch' section to ${refmapPath.name}")
+    }
+}
+
+fun rewriteOwner(ref: String, srgToNotch: Map<String, String>): String {
+    // ref format: L<owner>;<method>(<desc>)  OR  plain text
+    val semi = ref.indexOf(';')
+    if (semi < 0 || !ref.startsWith("L")) return ref
+    val owner = ref.substring(1, semi)
+    val notch = srgToNotch[owner] ?: owner
+    return "L" + notch + ref.substring(semi)
+}
+
 tasks.named<Jar>("jar") {
-    dependsOn(":common:jar", ":modules:jar")
+    dependsOn(":common:jar", ":modules:jar", patchRefmap)
     from(refmapFile)
     // Include :common and :modules compiled class outputs.
     from(project(":common").layout.buildDirectory.dir("classes/java/main"))
@@ -96,4 +170,71 @@ tasks.named<Jar>("jar") {
 // The launcher injects the resulting artifact as the per-version client jar.
 tasks.named("reobfJar") {
     // RFG wires this automatically; left explicit for discoverability.
+    dependsOn(patchRefmap)
+    finalizedBy("patchMixinTargets")
 }
+
+// Post-reobf task: rewrite the @Mixin(value=X.class) annotations in the
+// reobfuscated jar so that the target class names are the notch-obfuscated
+// runtime names (blt, bao, ...). MC 1.7.10 ships with notch class names, so
+// Mixin's target lookup for "net.minecraft.client.renderer.EntityRenderer"
+// fails; rewriting to targets={"blt"} makes it resolve at runtime.
+val patchMixinTargets = tasks.register("patchMixinTargets") {
+    dependsOn("reobfJar")
+    val reobfJar = layout.buildDirectory.file("libs/v1_7_10-1.0.0-SNAPSHOT.jar")
+    val notchSrgPath = notchSrg
+    val patcherSrc = layout.projectDirectory.file("build-tools/src/MixinTargetPatcher.java").asFile
+    val patcherOut = layout.buildDirectory.dir("tools-classes").get().asFile
+    inputs.file(reobfJar)
+    inputs.file(notchSrgPath)
+    inputs.file(patcherSrc)
+    outputs.file(reobfJar)
+    doLast {
+        val jarFile = reobfJar.get().asFile
+        if (!jarFile.exists()) {
+            logger.warn("patchMixinTargets: reobf jar not found at $jarFile, skipping")
+            return@doLast
+        }
+        // Compile the patcher against asm 9.6.
+        val asmDeps = configurations.detachedConfiguration(
+            dependencies.create("org.ow2.asm:asm:9.6"),
+            dependencies.create("org.ow2.asm:asm-tree:9.6"),
+            dependencies.create("org.ow2.asm:asm-commons:9.6")
+        ).files
+        patcherOut.mkdirs()
+        val cp = asmDeps.joinToString(File.pathSeparator)
+        // Gradle daemon runs on the JDK pointed by JAVA_HOME; System.getProperty
+        // ("java.home") on JDK 8 returns the nested jre/ dir whose bin/ has no
+        // javac, so prefer JAVA_HOME explicitly.
+        val javaHome = System.getenv("JAVA_HOME") ?: System.getProperty("java.home")
+        val javacExe = javaHome + File.separator + "bin" + File.separator + "javac"
+        val javaExe = javaHome + File.separator + "bin" + File.separator + "java"
+        val compileArgs = ArrayList<String>()
+        compileArgs.add(javacExe)
+        compileArgs.add("-encoding"); compileArgs.add("UTF-8")
+        compileArgs.add("-d"); compileArgs.add(patcherOut.absolutePath)
+        compileArgs.add("-cp"); compileArgs.add(cp)
+        compileArgs.add(patcherSrc.absolutePath)
+        val compileProc = ProcessBuilder(compileArgs).redirectErrorStream(true).start()
+        val compileOut = compileProc.inputStream.readBytes().toString(Charsets.UTF_8)
+        val compileCode = compileProc.waitFor()
+        if (compileCode != 0) {
+            throw GradleException("patchMixinTargets: javac failed ($compileCode):\n$compileOut")
+        }
+        // Run the patcher.
+        val runArgs = ArrayList<String>()
+        runArgs.add(javaExe)
+        runArgs.add("-cp"); runArgs.add(patcherOut.absolutePath + File.pathSeparator + cp)
+        runArgs.add("MixinTargetPatcher")
+        runArgs.add(jarFile.absolutePath)
+        runArgs.add(notchSrgPath.absolutePath)
+        val runProc = ProcessBuilder(runArgs).redirectErrorStream(true).start()
+        val runOut = runProc.inputStream.readBytes().toString(Charsets.UTF_8)
+        val runCode = runProc.waitFor()
+        logger.lifecycle(runOut.trim())
+        if (runCode != 0) {
+            throw GradleException("patchMixinTargets: patcher failed ($runCode)")
+        }
+    }
+}
+

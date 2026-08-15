@@ -34,9 +34,10 @@ public static class ClientProfiles
             "mixin-0.8.7.jar",
             "asm-9.6.jar",
             "asm-tree-9.6.jar",
+            "asm-analysis-9.6.jar",
             "asm-commons-9.6.jar",
             "asm-util-9.6.jar",
-            "guava-15.0.jar",
+            "guava-17.0.jar",
             "gson-2.2.4.jar",
             "jopt-simple-4.5.jar",
             "log4j-api-2.0-beta9.jar",
@@ -52,11 +53,26 @@ public static class ClientProfiles
             "org.spongepowered.asm.launch.MixinTweaker",
             "net.everlastingness.client.v1_7_10.tweaker.ClientTweaker"
         ],
+        MixinConfigs =
+        [
+            // MixinTweaker reads these from the command line (--mixin <name>).
+            // The mixin.configs system property is ignored on 0.8.x.
+            "mixins.everlastingness.json"
+        ],
         SystemProperties = new Dictionary<string, string>
         {
-            ["mixin.configs"] = "mixins.everlastingness.json",
-            ["mixin.env.remapRefMap"] = "true",
-            ["everlastingness.version"] = mc
+            // All @Inject method names and @Shadow field names in the mixins
+            // use SRG names directly (func_*, field_*) so no refmap remap is
+            // needed. Build-time MixinTargetPatcher remaps all class references
+            // to notch. Disabling the refmap avoids the searge/notch env
+            // selection ambiguity that breaks @Inject selector parsing.
+            ["mixin.env.disableRefMap"] = "true",
+            // Verbose mixin logging so we can confirm each mixin APPLIED.
+            ["mixin.debug"] = "true",
+            // AutoWorld mixin: auto-create & join a singleplayer world on main
+            // menu load, for headless in-world testing.
+            ["everlastingness.version"] = mc,
+            ["everlastingness.autoworld"] = "true"
         },
         MainClass = "net.minecraft.launchwrapper.Launch"
     };
@@ -82,10 +98,15 @@ public static class ClientProfiles
         Era = MappingEra.ModernModLauncher,
         ClientJar = jar,
         // The agent jar bundles the client code + Premain-Class in its manifest.
-        // Runtime Mixin support is supplied by these libs alongside it.
+        // Runtime Mixin support is supplied by these libs alongside it. The
+        // common/modules jars carry the runtime module classes the mixins call
+        // (EverlastingnessClient, WeatherChangerModule, ...) — without them the
+        // handler bodies throw NoClassDefFoundError at apply time.
         ExtraClasspath =
         [
             "mixin-0.8.7.jar",
+            "common-1.0.0-SNAPSHOT.jar",
+            "modules-1.0.0-SNAPSHOT.jar",
             jar
         ],
         TweakClasses = [],
@@ -101,21 +122,48 @@ public static class ClientProfiles
 
     /// <summary>All supported version profiles, keyed by Minecraft version id.</summary>
     public static readonly IReadOnlyDictionary<string, EverlastingnessClientProfile> All =
-        new Dictionary<string, EverlastingnessClientProfile>
+        BuildAllVersions();
+
+    /// <summary>
+    /// Builds the complete version catalogue, mirroring Lunar Client's supported
+    /// version matrix (verified 2026-08 against Lunar's launcher API). Each
+    /// version is grouped into the injection era appropriate to its toolchain.
+    /// </summary>
+    private static Dictionary<string, EverlastingnessClientProfile> BuildAllVersions()
+    {
+        var all = new Dictionary<string, EverlastingnessClientProfile>();
+
+        // --- Legacy era: LaunchWrapper + MCP/SRG mappings, MixinTweaker ---
+        // 1.7.10 is the deepest legacy (full notch-obf at runtime) and the only
+        // version with its own tweaker source set (v1_7_10). 1.8.9–1.12.2 jars
+        // were rebuilt from the shared version-tolerant source (v1_20_x, agent
+        // + StandaloneMixinService, obf-rewritten per-version), so they inject
+        // through the modern -javaagent path on a modern JVM.
+        all["1.7.10"] = Legacy("1.7.10", "everlastingness-1.7.10.jar");
+        foreach (var v in new[] { "1.8.9", "1.9.4", "1.11.2", "1.12.2" })
+            all[v] = Modern(v, $"everlastingness-{v}.jar");
+
+        // --- Modern era: Java-agent injection, Mojang/Yarn mappings ---
+        // Covers 1.16.5 through the newest 1.21.x and the 26.x rebrand. All use
+        // the ModLauncher/agent injection path (no LaunchWrapper).
+        string[] modern =
         {
-            ["1.7.10"] = Legacy("1.7.10", "everlastingness-1.7.10.jar"),
-            ["1.8.9"] = Legacy("1.8.9", "everlastingness-1.8.9.jar"),
-            ["1.12.2"] = Legacy("1.12.2", "everlastingness-1.12.2.jar"),
-            ["1.16.5"] = Modern("1.16.5", "everlastingness-1.16.5.jar"),
-            ["1.17.1"] = Modern("1.17.1", "everlastingness-1.17.1.jar"),
-            ["1.18.2"] = Modern("1.18.2", "everlastingness-1.18.2.jar"),
-            ["1.19.2"] = Modern("1.19.2", "everlastingness-1.19.2.jar"),
-            ["1.19.4"] = Modern("1.19.4", "everlastingness-1.19.4.jar"),
-            ["1.20.1"] = Modern("1.20.1", "everlastingness-1.20.1.jar"),
-            ["1.20.4"] = Modern("1.20.4", "everlastingness-1.20.4.jar"),
-            ["1.21"] = Modern("1.21", "everlastingness-1.21.jar"),
-            ["1.21.4"] = Modern("1.21.4", "everlastingness-1.21.4.jar")
+            // 1.16–1.19
+            "1.16.5", "1.17.1", "1.18.1", "1.18.2",
+            "1.19", "1.19.2", "1.19.3", "1.19.4",
+            // 1.20.x
+            "1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6",
+            // 1.21.x (note: 1.21.2 is NOT supported by Lunar — private build)
+            "1.21", "1.21.1", "1.21.3", "1.21.4", "1.21.5",
+            "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11",
+            // 26.x rebrand (Fabric-based)
+            "26.1", "26.2"
         };
+        foreach (var v in modern)
+            all[v] = Modern(v, $"everlastingness-{v}.jar");
+
+        return all;
+    }
 
     /// <summary>The Minecraft version ids Everlastingness can inject into.</summary>
     public static IEnumerable<string> SupportedVersions => All.Keys;

@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GuiIngame.class)
 public class MixinGuiIngameCrosshair {
 
-    @Inject(method = "renderGameOverlay", at = @At("RETURN"))
+    @Inject(remap = false, method = "func_73830_a(FZII)V", at = @At("RETURN"))
     private void everlastingness$drawCustomCrosshair(float partialTicks, boolean hasScreen,
             int mouseX, int mouseY, CallbackInfo ci) {
         EverlastingnessClient client = EverlastingnessClient.get();

@@ -38,8 +38,8 @@ public class MixinRenderPlayerCape {
     private static final ResourceLocation CAPE_TEXTURE =
             new ResourceLocation("everlastingness", "textures/capes/default.png");
 
-    @Inject(
-        method = "doRender(Lnet/minecraft/client/entity/AbstractClientPlayer;DDDFF)V",
+    @Inject(remap = false, 
+        method = "func_76986_a(Lnet/minecraft/client/entity/AbstractClientPlayer;DDDFF)V",
         at = @At("RETURN"))
     private void everlastingness$drawCape(AbstractClientPlayer player,
                                           double x, double y, double z,

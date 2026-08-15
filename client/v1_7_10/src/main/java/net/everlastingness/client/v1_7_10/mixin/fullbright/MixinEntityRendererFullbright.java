@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityRenderer.class)
 public class MixinEntityRendererFullbright {
 
-    @Inject(method = "updateLightmap", at = @At("HEAD"), cancellable = true)
+    @Inject(remap = false, method = "func_78472_g(F)V", at = @At("HEAD"), cancellable = true)
     private void everlastingness$fullbright(float partialTicks, CallbackInfo ci) {
         EverlastingnessClient client = EverlastingnessClient.get();
         if (client == null) return;

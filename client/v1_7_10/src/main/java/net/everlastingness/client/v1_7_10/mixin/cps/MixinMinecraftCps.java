@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public class MixinMinecraftCps {
 
-    @Inject(method = "func_147115_a(Z)V", at = @At("HEAD"))
+    @Inject(remap = false, method = "func_147115_a(Z)V", at = @At("HEAD"))
     private void everlastingness$onLeftClick(boolean leftClick, CallbackInfo ci) {
         if (!leftClick) return;
         EverlastingnessClient client = EverlastingnessClient.get();

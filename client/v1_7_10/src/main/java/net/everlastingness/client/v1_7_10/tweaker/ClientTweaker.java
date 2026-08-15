@@ -49,6 +49,20 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
         String mcVersion = System.getProperty("everlastingness.version", "1.7.10");
         System.out.println("[Everlastingness] ClientTweaker injecting for " + mcVersion);
 
+        // Register our notch remapper on the Mixin environment's remapper chain.
+        // The @Mixin target annotations are already patched to notch string
+        // form at build time (MixinTargetPatcher), so target classes resolve
+        // directly. This IRemapper additionally covers any SRG class refs Mixin
+        // resolves through descriptor parsing.
+        try {
+            org.spongepowered.asm.mixin.MixinEnvironment env =
+                org.spongepowered.asm.mixin.MixinEnvironment.getDefaultEnvironment();
+            env.getRemappers().add(new NotchRemapper());
+            System.out.println("[Everlastingness] NotchRemapper registered on MixinEnvironment");
+        } catch (Throwable t) {
+            System.err.println("[Everlastingness] NotchRemapper env registration failed: " + t);
+        }
+
         // Start the client core (no MC references in :common, safe here).
         net.everlastingness.client.common.EverlastingnessClient client = Bootstrap.start(mcVersion);
 
@@ -103,6 +117,64 @@ public class ClientTweaker implements net.minecraft.launchwrapper.ITweaker {
         try {
             client.registerModule(new net.everlastingness.client.modules.hud.ClockArmorHudModule());
         } catch (Throwable t) { System.err.println("[Everlastingness] Clock&Armor module: " + t.getMessage()); }
+
+        // Third batch — Lunar-parity HUD modules
+        try { client.registerModule(new net.everlastingness.client.modules.hud.PingDisplayModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Ping module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.ArmorStatusModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ArmorStatus module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.DirectionHudModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] DirectionHud module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.ServerAddressModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ServerAddress module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.MemoryUsageModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] MemoryUsage module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.PlaytimeModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Playtime module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.KeystrokesModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Keystrokes module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.hud.PotionEffectsModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] PotionEffects module: " + t.getMessage()); }
+
+        // Fourth batch — Lunar-parity combat modules
+        try { client.registerModule(new net.everlastingness.client.modules.combat.HitboxModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Hitbox module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.combat.ReachDisplayModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ReachDisplay module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.combat.ComboCounterModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Combo module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.combat.DamageTintModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] DamageTint module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.combat.ToggleSneakModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ToggleSneak module: " + t.getMessage()); }
+
+        // Fifth batch — Lunar-parity performance/visual/QoL modules
+        try { client.registerModule(new net.everlastingness.client.modules.performance.FogModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Fog module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.performance.HurtCamModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] HurtCam module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.performance.ChunkBordersModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ChunkBorders module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.visual.TimeChangerModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] TimeChanger module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.visual.WeatherChangerModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] WeatherChanger module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.visual.NickHiderModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] NickHider module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.visual.MotionBlurModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] MotionBlur module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.AutoTextModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] AutoText module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.ChatTimestampsModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ChatTimestamps module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.ScoreboardModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Scoreboard module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.ScreenshotModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Screenshot module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.ShulkerPreviewModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] ShulkerPreview module: " + t.getMessage()); }
+        try { client.registerModule(new net.everlastingness.client.modules.utility.WailaModule()); }
+        catch (Throwable t) { System.err.println("[Everlastingness] Waila module: " + t.getMessage()); }
 
         try {
             client.registerModule(new net.everlastingness.client.modules.utility.CoordinateCopyModule());

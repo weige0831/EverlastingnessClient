@@ -82,3 +82,7 @@ secrets.json
 .minecraft/
 accounts.json
 *.token-cache
+
+# ===== Obf-rewrite pipeline scratch outputs (keep scripts, not artifacts) =====
+client-modern/buildSrc.bak/
+client-modern/v1_20_x/build.gradle.kts.bak

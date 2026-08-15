@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(RenderGlobal.class)
 public class MixinRenderGlobalOutline {
 
-    @Inject(method = "drawSelectionBox", at = @At("HEAD"))
+    @Inject(remap = false, method = "func_72731_b(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V", at = @At("HEAD"))
     private void everlastingness$outlineColorHead(EntityPlayer player,
             MovingObjectPosition mop, int renderPass, float partialTicks, CallbackInfo ci) {
         EverlastingnessClient client = EverlastingnessClient.get();
@@ -56,7 +56,7 @@ public class MixinRenderGlobalOutline {
         // lineWidth override is functional.
     }
 
-    @Inject(method = "drawSelectionBox", at = @At("RETURN"))
+    @Inject(remap = false, method = "func_72731_b(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/MovingObjectPosition;IF)V", at = @At("RETURN"))
     private void everlastingness$outlineColorReturn(EntityPlayer player,
             MovingObjectPosition mop, int renderPass, float partialTicks, CallbackInfo ci) {
         EverlastingnessClient client = EverlastingnessClient.get();

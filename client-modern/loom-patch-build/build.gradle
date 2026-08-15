@@ -1,0 +1,23 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+// This project is a thin wrapper: it depends on the original Loom jar
+// and applies the binary patch to MappingConfiguration.class at build time.
+// The patched jar is then available as a composite-build substitution for
+// net.fabricmc:fabric-loom.
+repositories {
+    maven { url = 'https://maven.fabricmc.net/'; name = 'Fabric' }
+    mavenCentral()
+}
+configurations {
+    originalLoom
+}
+dependencies {
+    originalLoom 'net.fabricmc:fabric-loom:1.6.10'
+}
+// The output artifact IS the patched Loom jar.
+def patchedJar = tasks.register('patchedJar', Jar) {
+    archiveBaseName = 'fabric-loom'
+    archiveVersion = '1.6.10'
+    // We'll populate the jar from the original + patched class.
+}

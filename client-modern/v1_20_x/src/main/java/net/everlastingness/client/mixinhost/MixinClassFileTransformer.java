@@ -30,7 +30,18 @@ public final class MixinClassFileTransformer implements ClassFileTransformer {
         // Mixin expects the dotted binary name.
         String name = internalName.replace('/', '.');
         try {
-            return transformer.transformClassBytes(name, name, classfileBuffer);
+            calls++;
+            if (calls == 1 || calls == 1000 || calls == 10000) {
+                System.out.println("[Everlastingness] transform call #" + calls + " for " + name);
+            }
+            byte[] result = transformer.transformClassBytes(name, name, classfileBuffer);
+            if (result != classfileBuffer) {
+                transforms++;
+                if (transforms <= 5) {
+                    System.out.println("[Everlastingness] transformed " + name + " (total " + transforms + ")");
+                }
+            }
+            return result;
         } catch (Throwable t) {
             // Never let a Mixin error prevent the class from loading.
             System.err.println("[Everlastingness] Mixin transform failed for " + name + ": " + t);
@@ -38,4 +49,7 @@ public final class MixinClassFileTransformer implements ClassFileTransformer {
             return null;
         }
     }
+
+    private int transforms;
+    private int calls;
 }

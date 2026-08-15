@@ -40,6 +40,15 @@ public sealed class EverlastingnessClientProfile
     public IReadOnlyList<string> TweakClasses { get; init; } = [];
 
     /// <summary>
+    /// Mixin config resource names passed via <c>--mixin &lt;name&gt;</c> on the
+    /// LaunchWrapper command line. MixinTweaker reads these from argv (not from
+    /// the <c>mixin.configs</c> system property, which it ignores on 0.8.x).
+    /// Each entry is a JSON resource on the classpath, e.g.
+    /// <c>mixins.everlastingness.json</c>.
+    /// </summary>
+    public IReadOnlyList<string> MixinConfigs { get; init; } = [];
+
+    /// <summary>
     /// JVM system properties set when launching with the client injected,
     /// e.g. <c>mixin.configs</c>, <c>mixin.debug</c>.
     /// </summary>
