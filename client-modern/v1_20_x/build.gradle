@@ -16,7 +16,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "net.fabricmc:fabric-loom:1.6.10"
+        classpath "net.fabricmc:fabric-loom:1.17.19"
     }
 }
 
@@ -31,6 +31,7 @@ base {
 }
 
 repositories {
+    maven { url = "file:///c/Users/songd/.everlastingness/maven-patches"; name = "Patches" }
     maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
     mavenCentral()
     maven { url = "https://repo.spongepowered.org/repository/maven-public/"; name = "Sponge Maven" }
@@ -51,6 +52,9 @@ loom {
 
 dependencies {
     minecraft "com.mojang:minecraft:${property('minecraft_version')}"
+    // 26.x: Mojang ships the client jar UNOBFUSCATED (official names at
+    // runtime). Compile against it directly with identity mappings — no
+    // yarn, no intermediary, no obf-rewrite needed for these versions.
     mappings "net.fabricmc:yarn:${property("yarn_mappings")}:v2"
     modImplementation "net.fabricmc:fabric-loader:${property('loader_version')}"
 
