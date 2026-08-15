@@ -1,0 +1,40 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "net.everlastingness.client.v26_x.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "MixinGameRenderer",
+    "autotext.MixinMinecraftAutoText",
+    "cape.MixinLivingEntityRendererCape",
+    "chat.MixinChatComponentTimestamps",
+    "chunkborders.MixinLevelRendererChunkBorders",
+    "combat.MixinClientPlayerDamage",
+    "combat.MixinInteractionManagerCombat",
+    "cps.MixinMinecraftCps",
+    "crosshair.MixinGuiCrosshair",
+    "fog.MixinGameRendererFog",
+    "fps.MixinEntityRenderDispatcherFps",
+    "fullbright.MixinLightmapFullbright",
+    "hitbox.MixinEntityRenderDispatcherHitbox",
+    "hud.MixinGameRendererHud",
+    "hurtcam.MixinGameRendererHurtCam",
+    "keybind.MixinMinecraftKeybind",
+    "motionblur.MixinGameRendererMotionBlur",
+    "nickhider.MixinMinecraftNick",
+    "outline.MixinLevelRendererOutline",
+    "perspective.MixinGameRendererPerspective",
+    "scoreboard.MixinGuiScoreboard",
+    "screenshot.MixinScreenshotClipboard",
+    "scroll.MixinAbstractContainerScreenScroll",
+    "shulker.MixinGuiScreenShulkerPreview",
+    "togglesneak.MixinClientPlayerSneak",
+    "weather.MixinLevelWeather",
+    "world.MixinLevelTime",
+    "zoom.MixinGameRendererZoom"
+  ],
+  "injectors": {
+    "defaultRequire": 0,
+    "defaultGroup": "everlastingness"
+  }
+}

@@ -172,9 +172,13 @@ internal static class Program
         Console.WriteLine($"[harness] MC version: {mcVersion}");
         Console.WriteLine($"[harness] timeout: {timeoutSeconds}s");
 
-        // Only 1.7.10 (LaunchWrapper, own v1_7_10 tweaker set) needs Java 8;
-        // 1.8.9–1.12.2 inject via the agent on JDK 21 like the modern versions.
-        var javaPath = mcVersion == "1.7.10" ? FindJava8() : @"C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot\bin\java.exe";
+        // 1.7.10 (LaunchWrapper) needs Java 8; 26.x requires Java 25 (their
+        // version JSON passes --sun-misc-unsafe-memory-access which JDK 21
+        // rejects); everything else runs on JDK 21.
+        string javaPath;
+        if (mcVersion == "1.7.10") javaPath = FindJava8();
+        else if (mcVersion.StartsWith("26.")) javaPath = @"C:\Users\songd\jdk25\jdk-25.0.4\bin\java.exe";
+        else javaPath = @"C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot\bin\java.exe";
         if (javaPath == null)
         {
             Console.Error.WriteLine("[harness] FAIL: Java 8 not found. 1.7.10 requires Java 8.");

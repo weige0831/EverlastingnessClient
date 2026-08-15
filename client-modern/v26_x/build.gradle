@@ -1,0 +1,119 @@
+// Everlastingness client module for Minecraft 1.16.5-1.20.x (modern era).
+// Loom 1.13.6 + Gradle 8.14 (avoids the mappingio propagateOuterClassNames bug
+// present in Loom 1.17.x which calls a method absent from all released
+// mapping-io jars).
+
+buildscript {
+    repositories {
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+        maven { url = "file:///c/Users/songd/.everlastingness/maven-patches"; name = "Patches" }
+        maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+        mavenCentral()
+    }
+    repositories {
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+        maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:1.17.19"
+    }
+}
+
+apply plugin: "fabric-loom"
+
+// Mixin 0.8.7 reads mixin classes up to class version 61 (Java 17); 26.x MC
+// classes (version 69) are handled by the ASM 9.8 bundled in the fabric
+// sponge-mixin fork.
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}
+apply plugin: "maven-publish"
+
+version = property("mod_version")
+group = property("maven_group")
+
+base {
+    archivesName = "everlastingness-${property('minecraft_version')}"
+}
+
+repositories {
+    maven { url = "file:///c/Users/songd/.everlastingness/maven-patches"; name = "Patches" }
+    maven { url = "https://maven.legacyfabric.net/"; name = "LegacyFabric" }
+    mavenCentral()
+    maven { url = "https://repo.spongepowered.org/repository/maven-public/"; name = "Sponge Maven" }
+    maven { url = "https://maven.fabricmc.net/"; name = "Fabric" }
+}
+
+loom {
+    mods {
+        everlastingness {
+            sourceSet sourceSets.main
+        }
+    }
+    // 1.21.9+ ships a new unpick format Loom cannot parse; we never use the
+    // unpicked (named-parameter) data anyway — mixin remapping only needs the
+    // tiny mappings.
+    enableTransitiveAccessWideners = false
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${property('minecraft_version')}"
+    // 26.x: Mojang ships the client jar UNOBFUSCATED (official names at
+    // runtime). Compile against it directly with identity mappings — no
+    // yarn, no intermediary, no obf-rewrite needed for these versions.
+    // 26.x: client ships UNOBFUSCATED (official names = runtime names); no
+    // yarn/intermediary exists. Identity mappings generated from the jar's
+    // class list (see scripts/mappings/gen_identity.py).
+    mappings files("C:/Users/songd/.everlastingness/maven-patches/net/everlastingness/identity-${property("minecraft_version")}/1/identity-${property("minecraft_version")}-1.jar")
+    modImplementation "net.fabricmc:fabric-loader:${property('loader_version')}"
+
+    compileOnly "net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7"
+    compileOnly "org.ow2.asm:asm-tree:9.8"
+    compileOnly files("F:/zcode/EverlastingnessClient/client/common/build/libs/common-1.0.0-SNAPSHOT.jar")
+    compileOnly files("F:/zcode/EverlastingnessClient/client/modules/build/libs/modules-1.0.0-SNAPSHOT.jar")
+
+    include "net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7"
+    include "org.ow2.asm:asm-tree:9.8"
+    include "org.ow2.asm:asm:9.8"
+    include "org.ow2.asm:asm-commons:9.8"
+    include "org.ow2.asm:asm-util:9.8"
+    include "org.ow2.asm:asm-analysis:9.8"
+}
+
+// Mixin annotation processor args (Loom wires the processor; we just pass
+// the refmap output path and the reobf SRG file for Yarn->official remapping).
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+        "-AoutRefMapFile=${layout.buildDirectory.file('everlastingness.refmap.json').get().asFile.absolutePath}",
+        "-AdefaultObfuscationEnv=searge"
+    ]
+    options.encoding = "UTF-8"
+}
+
+processResources {
+    inputs.property "version", project.version
+}
+
+jar {
+    from(layout.buildDirectory.file('everlastingness.refmap.json')) {
+        into ''
+        // include only if exists
+    }
+    // Preserve the MANIFEST with Premain-Class for the agent.
+    manifest {
+        attributes(
+            "Premain-Class": "net.everlastingness.client.agent.EverlastingnessAgent",
+            "Agent-Class": "net.everlastingness.client.agent.EverlastingnessAgent",
+            "Can-Retransform-Classes": "true",
+            "Implementation-Version": project.version
+        )
+    }
+}
+
+// Shade :common and :modules if available; for now the modern client is
+// self-contained (no shared :common dependency).

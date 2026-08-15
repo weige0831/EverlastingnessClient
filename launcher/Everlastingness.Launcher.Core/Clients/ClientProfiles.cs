@@ -92,8 +92,17 @@ public static class ClientProfiles
     /// intermediary→official reobfuscation. This is tracked as the
     /// "intermediary→official reobf gap" — see README.
     /// </remarks>
-    private static EverlastingnessClientProfile Modern(string mc, string jar) => new()
+    private static EverlastingnessClientProfile Modern(string mc, string jar)
     {
+        // 26.x uses the fabric sponge-mixin fork (0.17.3, ASM 9.8) — both
+        // nested in the agent jar AND on the classpath (the agent's own
+        // linking needs IRemapper etc. from the system loader). The classic
+        // 0.8.7 classpath jar must NOT shadow it.
+        var extraCp = mc.StartsWith("26.")
+            ? new[] { "mixin-fork-0.17.3.jar", "asm-9.8.jar", "asm-tree-9.8.jar", "asm-commons-9.8.jar", "asm-util-9.8.jar", "asm-analysis-9.8.jar", "common-1.0.0-SNAPSHOT.jar", "modules-1.0.0-SNAPSHOT.jar", jar }
+            : new[] { "mixin-0.8.7.jar", "common-1.0.0-SNAPSHOT.jar", "modules-1.0.0-SNAPSHOT.jar", jar };
+        return new()
+        {
         MinecraftVersion = mc,
         Era = MappingEra.ModernModLauncher,
         ClientJar = jar,
@@ -102,13 +111,7 @@ public static class ClientProfiles
         // common/modules jars carry the runtime module classes the mixins call
         // (EverlastingnessClient, WeatherChangerModule, ...) — without them the
         // handler bodies throw NoClassDefFoundError at apply time.
-        ExtraClasspath =
-        [
-            "mixin-0.8.7.jar",
-            "common-1.0.0-SNAPSHOT.jar",
-            "modules-1.0.0-SNAPSHOT.jar",
-            jar
-        ],
+        ExtraClasspath = extraCp,
         TweakClasses = [],
         SystemProperties = new Dictionary<string, string>
         {
@@ -118,7 +121,8 @@ public static class ClientProfiles
         // 1.13+ vanilla still ships net.minecraft.client.main.Main as the entry
         // point; the agent hooks in via -javaagent before Main runs.
         MainClass = "net.minecraft.client.main.Main"
-    };
+        };
+    }
 
     /// <summary>All supported version profiles, keyed by Minecraft version id.</summary>
     public static readonly IReadOnlyDictionary<string, EverlastingnessClientProfile> All =
