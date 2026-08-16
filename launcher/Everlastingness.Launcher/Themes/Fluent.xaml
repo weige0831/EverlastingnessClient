@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         Win11 Fluent design tokens. Dark + light variants keyed off
+         the theme variant; window layers use near-opaque fills over
+         the (platform) backdrop to approximate Mica.
+         ============================================================ -->
+
+    <!-- Layer colors: window base / card / control / accent-text -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="MicaBrush" Color="#F2161A23"/>
+            <SolidColorBrush x:Key="AcrylicBrush" Color="#F01C212E"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#2A303F" Opacity="0.92"/>
+            <SolidColorBrush x:Key="CardHoverBrush" Color="#323A4C"/>
+            <SolidColorBrush x:Key="ControlBrush" Color="#333B4D"/>
+            <SolidColorBrush x:Key="ControlBorderBrush" Color="#3D465A"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F2F4F9"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A7B0C0"/>
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#6E7788"/>
+            <SolidColorBrush x:Key="NavIndicatorBrush" Color="#4CC2FF"/>
+            <SolidColorBrush x:Key="DividerBrush" Color="#333B4D"/>
+            <SolidColorBrush x:Key="LaunchGreenBrush" Color="#2D7D46"/>
+            <SolidColorBrush x:Key="LaunchGreenHoverBrush" Color="#359352"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="MicaBrush" Color="#F2F3F7" Opacity="0.96"/>
+            <SolidColorBrush x:Key="AcrylicBrush" Color="#E6E8EF" Opacity="0.85"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" Opacity="0.92"/>
+            <SolidColorBrush x:Key="CardHoverBrush" Color="#F0F2F7"/>
+            <SolidColorBrush x:Key="ControlBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="ControlBorderBrush" Color="#D5D9E2"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A1D26"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5B6272"/>
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#8A90A0"/>
+            <SolidColorBrush x:Key="NavIndicatorBrush" Color="#0067C0"/>
+            <SolidColorBrush x:Key="DividerBrush" Color="#E2E5EC"/>
+            <SolidColorBrush x:Key="LaunchGreenBrush" Color="#0F7B3F"/>
+            <SolidColorBrush x:Key="LaunchGreenHoverBrush" Color="#12854A"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Fixed palette -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#4CC2FF"/>
+    <SolidColorBrush x:Key="NewsBannerBrush" Color="#1E3A5F"/>
+
+    <!-- Fonts: Win11 stack -->
+    <FontFamily x:Key="ContentFontFamily">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI, sans-serif</FontFamily>
+    <FontFamily x:Key="DisplayFontFamily">Segoe UI Variable Display, Segoe UI, Microsoft YaHei UI, sans-serif</FontFamily>
+    <FontFamily x:Key="MonoFontFamily">Cascadia Code, Cascadia Mono, Consolas, monospace</FontFamily>
+
+    <!-- Win11 corner radii -->
+    <CornerRadius x:Key="WindowCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="PillCornerRadius">999</CornerRadius>
+</ResourceDictionary>

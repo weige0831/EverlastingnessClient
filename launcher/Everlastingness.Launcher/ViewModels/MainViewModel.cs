@@ -115,6 +115,25 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Game process log lines (tail).</summary>
     public ObservableCollection<string> GameLog { get; } = new();
 
+    // --- Navigation ---
+    public string[] NavItems { get; } = { "首页", "模块", "设置", "账号", "日志" };
+
+    [ObservableProperty]
+    private int _navIndex;
+
+    /// <summary>Module catalogue page model (persists to modules.json).</summary>
+    public ModuleCatalogViewModel Modules { get; } = new();
+
+    // --- Staged launch progress (Home hero) ---
+    public static readonly string[] LaunchStages = { "下载资源", "校验文件", "解压依赖", "启动游戏" };
+
+    [ObservableProperty]
+    private int _launchStage = -1;
+
+    partial void OnLaunchStageChanged(int value) => Status = value < 0
+        ? "就绪"
+        : $"{LaunchStages[value]}… ({value + 1}/{LaunchStages.Length})";
+
     /// <summary>Load the Mojang version manifest.</summary>
     [RelayCommand(CanExecute = nameof(CanRunOperation))]
     private async Task RefreshVersionsAsync()
@@ -191,6 +210,7 @@ public partial class MainViewModel : ViewModelBase
 
         IsBusy = true;
         Progress = 0;
+        LaunchStage = 0;
         GameLog.Clear();
         var version = SelectedClientVersion.MinecraftVersion;
         var ct = CancellationToken.None;
@@ -207,6 +227,7 @@ public partial class MainViewModel : ViewModelBase
                     : $"下载中:{p.CurrentFile}";
             });
             await _launcher.InstallAsync(version, progress, ct);
+            LaunchStage = 2;
 
             // 2. Resolve session (signed-in account, or offline fallback).
             var session = IsSignedIn && Account is not null
@@ -248,6 +269,7 @@ public partial class MainViewModel : ViewModelBase
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
+            LaunchStage = 3;
             Status = InjectClient ? $"已启动 {version}(注入客户端)" : $"已启动 {version}(原版)";
 
             // Persist user choices for next launch.
@@ -265,6 +287,7 @@ public partial class MainViewModel : ViewModelBase
         {
             IsBusy = false;
             Progress = null;
+            LaunchStage = -1;
         }
     }
 

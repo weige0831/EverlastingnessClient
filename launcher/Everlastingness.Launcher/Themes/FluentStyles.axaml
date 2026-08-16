@@ -1,0 +1,106 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Control restyling: Fluent buttons/inputs/toggles -->
+    <Style Selector="Button.fluent">
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
+        <Setter Property="Background" Value="{DynamicResource ControlBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+    </Style>
+    <Style Selector="Button.fluent:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+    </Style>
+    <Style Selector="Button.fluent:pressed /template/ ContentPresenter">
+        <Setter Property="Opacity" Value="0.7"/>
+    </Style>
+
+    <Style Selector="Button.launch">
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
+        <Setter Property="Background" Value="{DynamicResource LaunchGreenBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFontFamily}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="36,12"/>
+    </Style>
+    <Style Selector="Button.launch:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource LaunchGreenHoverBrush}"/>
+    </Style>
+    <Style Selector="Button.launch:pressed /template/ ContentPresenter">
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+    <Style Selector="Button.launch:disabled">
+        <Setter Property="Opacity" Value="0.45"/>
+    </Style>
+
+    <Style Selector="TextBox.fluent">
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
+        <Setter Property="Background" Value="{DynamicResource ControlBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="ComboBox.fluent">
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
+        <Setter Property="Background" Value="{DynamicResource ControlBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- Cards -->
+    <Style Selector="Border.card">
+        <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+        <Setter Property="Padding" Value="20,16"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- ToggleSwitch restyle: Fluent pill -->
+    <Style Selector="ToggleSwitch.fluent">
+        <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+    </Style>
+
+    <!-- Nav item -->
+    <Style Selector="ListBoxItem.nav">
+        <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+    </Style>
+    <Style Selector="ListBoxItem.nav:pointerover">
+        <Setter Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+    </Style>
+    <Style Selector="ListBoxItem.nav:selected">
+        <Setter Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- Typography helpers -->
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFontFamily}"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFontFamily}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.body">
+        <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontFamily" Value="{StaticResource ContentFontFamily}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
+    </Style>
+</Styles>

@@ -2,14 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Everlastingness.Launcher.App"
              xmlns:local="using:Everlastingness.Launcher"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Themes/Fluent.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="/Themes/FluentStyles.axaml"/>
     </Application.Styles>
 </Application>

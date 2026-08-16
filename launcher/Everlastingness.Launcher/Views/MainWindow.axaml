@@ -3,139 +3,360 @@
         xmlns:vm="using:Everlastingness.Launcher.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="680"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="760"
         x:Class="Everlastingness.Launcher.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Everlastingness Launcher"
-        Width="1000" Height="680"
-        MinWidth="820" MinHeight="560"
+        Width="1180" Height="760"
+        MinWidth="940" MinHeight="620"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <!-- Window chrome: rounded, layered over the acrylic backdrop -->
+    <Panel>
+        <Border CornerRadius="8" Background="{DynamicResource MicaBrush}"/>
+        <Border CornerRadius="8" BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="1" IsHitTestVisible="False"/>
 
-        <!-- ===== Header ===== -->
-        <Border Grid.Row="0" Background="#1b1f2b" Padding="20,14">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <TextBlock Text="⬡" FontSize="28" Foreground="#6ea8fe" VerticalAlignment="Center"/>
-                    <StackPanel>
-                        <TextBlock Text="Everlastingness" FontSize="20" FontWeight="SemiBold" Foreground="White"/>
-                        <TextBlock Text="Minecraft 优化客户端 · 对标 Lunar / Badlion" FontSize="11" Foreground="#9aa3b2"/>
-                    </StackPanel>
+        <Grid RowDefinitions="44,*" Margin="1">
+
+            <!-- ===== Custom title bar ===== -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                            Margin="16,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="⬡" FontSize="18" Foreground="{DynamicResource AccentBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="Everlastingness" FontFamily="{StaticResource DisplayFontFamily}"
+                               FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center"/>
                 </StackPanel>
-
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <!-- Title-bar drag area -->
+                <Border Grid.Column="1" Background="Transparent"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="0,0,8,0">
                     <TextBlock Text="{Binding Account.Username, FallbackValue=未登录}"
-                               Foreground="#cfd6e4" VerticalAlignment="Center"/>
-                    <Button Content="微软登录" Command="{Binding LoginCommand}"
-                            IsEnabled="{Binding !IsBusy}" Padding="14,6"/>
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" FontSize="12"/>
+                    <Button Classes="fluent" Content="微软登录" Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding !IsBusy}" Padding="14,5" FontSize="12"/>
                 </StackPanel>
             </Grid>
-        </Border>
 
-        <!-- ===== Body ===== -->
-        <ScrollViewer Grid.Row="1" Padding="20">
-            <Grid ColumnDefinitions="360,*" RowDefinitions="Auto,Auto,*">
+            <!-- ===== Body: nav rail + content ===== -->
+            <Grid Grid.Row="1" ColumnDefinitions="200,*">
 
-                <!-- Version selection -->
-                <Border Grid.Row="0" Grid.Column="0" Margin="0,0,10,10" Padding="16"
-                        Background="#222734" CornerRadius="8">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="客户端版本" FontWeight="SemiBold" Foreground="White"/>
-                        <TextBlock Text="选择要注入的 Minecraft 版本" FontSize="11" Foreground="#9aa3b2"/>
-
-                        <ComboBox ItemsSource="{Binding ClientVersions}"
-                                  SelectedItem="{Binding SelectedClientVersion}"
-                                  HorizontalAlignment="Stretch" Margin="0,4,0,0"/>
-                        <ItemsControl ItemsSource="{Binding ClientVersions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ClientVersionViewModel">
-                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                        <TextBlock Grid.Column="0" Text="{Binding MinecraftVersion}" Foreground="#cfd6e4"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding Ready, StringFormat='已就绪:{0}'}"
-                                                   Foreground="#6ea8fe" FontSize="11"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-
-                <!-- Launch settings -->
-                <Border Grid.Row="0" Grid.Column="1" Margin="10,0,0,10" Padding="16"
-                        Background="#222734" CornerRadius="8">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="0,4,0,0">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Java 路径" Foreground="#9aa3b2" Margin="0,0,0,4"/>
-                        <TextBox  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                  Text="{Binding JavaPath}" Watermark="留空则自动检测" Margin="0,0,8,8"/>
-
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="最大内存 (MB)" Foreground="#9aa3b2" Margin="0,0,0,4"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="离线用户名" Foreground="#9aa3b2" Margin="8,0,0,4"/>
-                        <NumericUpDown Grid.Row="3" Grid.Column="0"
-                                       Value="{Binding MaximumRamMb}" Minimum="512" Maximum="65536" Increment="512"/>
-                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding OfflineUsername}" Margin="8,0,0,0"/>
-
-                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                  Content="启动时注入 Everlastingness 客户端"
-                                  IsChecked="{Binding InjectClient}" Margin="0,12,0,0"/>
-                    </Grid>
-                </Border>
-
-                <!-- Vanilla version manifest -->
-                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,10" Padding="16"
-                        Background="#222734" CornerRadius="8">
-                    <StackPanel Spacing="8">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="原版版本清单(Mojang)" FontWeight="SemiBold" Foreground="White"/>
-                            <Button Grid.Column="1" Content="刷新" Command="{Binding RefreshVersionsCommand}"
-                                    IsEnabled="{Binding !IsBusy}" Padding="12,4"/>
-                        </Grid>
-                        <ComboBox ItemsSource="{Binding MinecraftVersions}"
-                                  SelectedItem="{Binding SelectedMinecraftVersion}"
-                                  HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Game log -->
-                <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="12"
-                        Background="#161a24" CornerRadius="8" BorderBrush="#2a3040" BorderThickness="1">
-                    <Grid RowDefinitions="Auto,*">
-                        <TextBlock Grid.Row="0" Text="游戏日志" Foreground="#9aa3b2" Margin="0,0,0,6"/>
-                        <ListBox Grid.Row="1" ItemsSource="{Binding GameLog}" Background="Transparent" BorderThickness="0"
-                                 FontFamily="Cascadia Code,Consolas,Menlo,monospace" FontSize="11">
+                <!-- NavigationView-style rail -->
+                <Border Grid.Column="0" Background="{DynamicResource AcrylicBrush}"
+                        CornerRadius="8,0,0,8" Margin="8,8,0,8" Padding="8">
+                    <Grid RowDefinitions="*,Auto">
+                        <ListBox Grid.Row="0" Background="Transparent" BorderThickness="0" Padding="0"
+                                 ItemsSource="{Binding NavItems, Mode=OneTime}"
+                                 SelectedIndex="{Binding NavIndex}">
                             <ListBox.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <TextBlock Text="{Binding}" Foreground="#cfd6e4" TextWrapping="Wrap"/>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <TextBlock Text="●" FontSize="8" Width="12"
+                                                   Foreground="{DynamicResource NavIndicatorBrush}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding $parent[ListBoxItem].IsSelected}"/>
+                                        <TextBlock Text="{Binding}" FontSize="14"
+                                                   FontFamily="{StaticResource ContentFontFamily}"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="12,11"/>
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                    <Setter Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                </Style>
+                            </ListBox.Styles>
                         </ListBox>
+
+                        <StackPanel Grid.Row="1" Spacing="3" Margin="12,0,12,8">
+                            <TextBlock Classes="caption" Text="v1.0.0 · 38 模块"/>
+                            <TextBlock Classes="caption" Text="17 个支持版本"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
-            </Grid>
-        </ScrollViewer>
+                <!-- ===== Pages ===== -->
+                <Panel Grid.Column="1" Margin="8,8,8,8">
 
-        <!-- ===== Footer: status + launch ===== -->
-        <Border Grid.Row="2" Background="#1b1f2b" Padding="20,10">
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4">
-                    <TextBlock Text="{Binding Status}" Foreground="#cfd6e4"/>
-                    <ProgressBar IsIndeterminate="False" Maximum="1"
-                                 IsVisible="{Binding IsBusy}"
-                                 Height="3" MinWidth="200"/>
-                </StackPanel>
-                <Button Grid.Column="1" Content="启动游戏" Command="{Binding LaunchCommand}"
-                        IsEnabled="{Binding !IsBusy}"
-                        Background="#6ea8fe" Foreground="White" FontWeight="SemiBold"
-                        Padding="28,8" Margin="12,0,0,0" FontSize="14"/>
-            </Grid>
-        </Border>
+                    <!-- PAGE: HOME -->
+                    <ScrollViewer IsVisible="{Binding NavIndex, Converter={x:Static vm:NavIndexConverter.EqualTo0}}">
+                        <StackPanel Spacing="12">
 
-    </Grid>
+                            <!-- News hero banner -->
+                            <Border CornerRadius="8" Background="{DynamicResource NewsBannerBrush}"
+                                    Height="170" ClipToBounds="True">
+                                <Grid>
+                                    <StackPanel VerticalAlignment="Center" Margin="36,0">
+                                        <TextBlock Text="EVERLASTINGNESS" FontFamily="{StaticResource DisplayFontFamily}"
+                                                   FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"
+                                                   LetterSpacing="3"/>
+                                        <TextBlock Text="1.0 发布 — 26.x 正式支持" FontSize="28" FontWeight="Bold"
+                                                   Foreground="White" Margin="0,6,0,4"/>
+                                        <TextBlock Text="Mojang 停止混淆后的全新注入架构上线：26.1 / 26.2 现已与 1.7.10–1.21.11 同步可用，38 个模块全版本覆盖。"
+                                                   TextWrapping="Wrap" Width="560"
+                                                   Foreground="#C8D4E4" FontSize="13"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Launch card -->
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Classes="h2" Text="启动游戏"/>
+
+                                    <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                          ColumnDefinitions="*,260" Margin="0,12,0,0">
+                                        <StackPanel Grid.Column="0" Spacing="10" VerticalAlignment="Center">
+                                            <TextBlock Classes="caption" Text="MINECRAFT 版本"/>
+                                            <ComboBox Classes="fluent" MinHeight="38"
+                                                      ItemsSource="{Binding ClientVersions}"
+                                                      SelectedItem="{Binding SelectedClientVersion}"
+                                                      HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:ClientVersionViewModel">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="{Binding MinecraftVersion}" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="● 就绪" FontSize="11"
+                                                                       Foreground="#4CC38A"
+                                                                       IsVisible="{Binding Ready}"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="launch" Content="启 动"
+                                                Command="{Binding LaunchCommand}"
+                                                IsEnabled="{Binding !IsBusy}"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                                MinHeight="46"/>
+                                    </Grid>
+
+                                    <!-- Staged progress -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                Margin="0,16,0,0" Spacing="6"
+                                                IsVisible="{Binding IsBusy}">
+                                        <ProgressBar Value="{Binding Progress, FallbackValue=0}" Maximum="1"
+                                                     MinHeight="4" CornerRadius="2"/>
+                                        <UniformGrid Columns="4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,6,0" Fill="#4CC38A"/>
+                                                <TextBlock Classes="body" Text="下载资源"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,6,0" Fill="#4CC38A"/>
+                                                <TextBlock Classes="body" Text="校验文件"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,6,0" Fill="#4CC2FF"/>
+                                                <TextBlock Classes="body" Text="解压依赖"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,6,0" Fill="#5A6272"/>
+                                                <TextBlock Classes="body" Text="启动游戏"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Version matrix card -->
+                            <Border Classes="card">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Grid.Column="0" Classes="h2" Text="已支持版本"/>
+                                        <Button Grid.Column="1" Classes="fluent" Content="刷新清单"
+                                                Command="{Binding RefreshVersionsCommand}"
+                                                IsEnabled="{Binding !IsBusy}" Padding="12,5"/>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding ClientVersions}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ClientVersionViewModel">
+                                                <Border CornerRadius="4" Padding="10,6" Margin="0,0,8,8"
+                                                        Background="{DynamicResource ControlBrush}"
+                                                        BorderBrush="{DynamicResource ControlBorderBrush}"
+                                                        BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding MinecraftVersion}" FontSize="12"/>
+                                                        <Ellipse Width="7" Height="7" VerticalAlignment="Center">
+                                                            <Ellipse.Fill>
+                                                                <MultiBinding Converter="{x:Static vm:ReadyDotConverter.Default}">
+                                                                    <Binding Path="Ready"/>
+                                                                </MultiBinding>
+                                                            </Ellipse.Fill>
+                                                        </Ellipse>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: MODULES -->
+                    <Grid IsVisible="{Binding NavIndex, Converter={x:Static vm:NavIndexConverter.EqualTo1}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Spacing="4" Margin="4,0,4,12">
+                            <TextBlock Classes="h1" Text="模块"/>
+                            <TextBlock Classes="body" Text="38 个游戏内功能 · 开关会保存到 modules.json 并在下次启动时生效"/>
+                        </StackPanel>
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding Modules.Modules}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ModuleItemViewModel">
+                                        <Border Classes="card" Padding="16,12" Margin="0,0,0,8">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Classes="h2" Text="{Binding Name}"/>
+                                                        <Border CornerRadius="3" Padding="6,1"
+                                                                Background="{DynamicResource ControlBrush}">
+                                                            <TextBlock Classes="caption" Text="{Binding Category}"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Classes="body" Text="{Binding Description}" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <ToggleSwitch Grid.Column="1" Classes="fluent"
+                                                              IsChecked="{Binding Enabled}"
+                                                              VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- PAGE: SETTINGS -->
+                    <ScrollViewer IsVisible="{Binding NavIndex, Converter={x:Static vm:NavIndexConverter.EqualTo2}}">
+                        <StackPanel Spacing="12" Margin="4,0,4,0">
+                            <TextBlock Classes="h1" Text="设置"/>
+                            <Border Classes="card">
+                                <StackPanel Spacing="14">
+                                    <TextBlock Classes="h2" Text="Java 与内存"/>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="body" Text="Java 路径（留空自动检测）"/>
+                                        <TextBox Classes="fluent" Text="{Binding JavaPath}"
+                                                 Watermark="C:\Program Files\Java\jdk-21\bin\java.exe"
+                                                 MinHeight="36"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="body"
+                                                   Text="{Binding MaximumRamMb, StringFormat='最大内存 {0} MB', FallbackValue='最大内存'}"/>
+                                        <Slider Minimum="512" Maximum="16384" TickFrequency="512"
+                                                Value="{Binding MaximumRamMb}"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="body" Text="离线用户名"/>
+                                        <TextBox Classes="fluent" Text="{Binding OfflineUsername}"
+                                                 Watermark="Player" MinHeight="36" MaxWidth="260"
+                                                 HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Classes="card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Classes="h2" Text="注入"/>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Classes="body" Text="启动时注入 Everlastingness 客户端"/>
+                                            <TextBlock Classes="caption" Text="关闭后以原版方式启动"/>
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding InjectClient}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: ACCOUNT -->
+                    <ScrollViewer IsVisible="{Binding NavIndex, Converter={x:Static vm:NavIndexConverter.EqualTo3}}">
+                        <StackPanel Spacing="12" Margin="4,0,4,0">
+                            <TextBlock Classes="h1" Text="账号"/>
+                            <Border Classes="card">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="64,*" Margin="0,0,0,4">
+                                        <Border Grid.Column="0" Width="64" Height="64" CornerRadius="32"
+                                                Background="{DynamicResource ControlBrush}"
+                                                BorderBrush="{DynamicResource ControlBorderBrush}"
+                                                BorderThickness="1">
+                                            <TextBlock Text="⬡" FontSize="26"
+                                                       Foreground="{DynamicResource AccentBrush}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center" Margin="14,0,0,0">
+                                            <TextBlock Classes="h2"
+                                                       Text="{Binding Account.Username, FallbackValue=未登录}"/>
+                                            <TextBlock Classes="body"
+                                                       Text="{Binding IsSignedIn, FallbackValue=false, StringFormat='微软账号已登录: {0}'}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Button Classes="fluent" Content="使用微软账号登录"
+                                            Command="{Binding LoginCommand}" IsEnabled="{Binding !IsBusy}"
+                                            HorizontalAlignment="Left" MinWidth="200" MinHeight="38"/>
+                                    <TextBlock Classes="caption"
+                                               Text="未登录时将以离线模式启动（用户名见设置页）。"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: LOG -->
+                    <Border IsVisible="{Binding NavIndex, Converter={x:Static vm:NavIndexConverter.EqualTo4}}"
+                            Classes="card" Padding="10">
+                        <Grid RowDefinitions="Auto,*">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="6,4,6,8">
+                                <TextBlock Grid.Column="0" Classes="h2" Text="游戏日志"/>
+                                <TextBlock Grid.Column="1" Classes="caption"
+                                           Text="{Binding Status, FallbackValue=就绪}"/>
+                            </Grid>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding GameLog}" Background="Transparent"
+                                     BorderThickness="0" FontFamily="{StaticResource MonoFontFamily}" FontSize="11.5">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+
+                </Panel>
+            </Grid>
+        </Grid>
+    </Panel>
 </Window>
